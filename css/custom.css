@@ -1,0 +1,45 @@
+.pads{
+  padding:6px;
+  margin:2px;
+}
+
+.btn{
+ max-width: 100px;
+}
+
+h3.announce{
+	background: #BC953C;
+    color: #fff;
+    padding: 4px;
+    text-align: center;
+}
+
+.success{
+	background: #23C37A;
+    padding: 3px;
+    margin-bottom: 5px;
+    border-radius: 2px;
+    color: #fff;
+    text-align: center;
+}
+
+.error{
+	background: #E4536C;
+	color: #fff;
+	padding: 3px;
+}
+
+div.user_list{
+	background: pink;
+    padding: 3px;
+    margin-bottom:2px;
+}
+
+button#usern_remove, button#usere_remove {
+	float:right;
+	font-size: 10px;
+}
+
+input[readonly]{
+	border:none;
+}

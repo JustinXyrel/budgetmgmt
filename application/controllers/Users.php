@@ -235,12 +235,14 @@ class Users extends CI_Controller {
  		//echo "<pre>",print_r($response),"</pre>";die();
  		//$leaders = $this->umodel->get_where('tbl_users',array('role'=>'2'));
  		$sponsors = $this->umodel->get('tbl_sponsors');
+ 		$line_items = $this->umodel->get('tbl_line_items');
+
 
  		$table_name= 'manage';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
  		
- 		$data['content'] = add_budget_form($response,$sponsors,$data['current_page']);
+ 		$data['content'] = add_budget_form($response,$sponsors,$line_items,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);
@@ -580,8 +582,9 @@ class Users extends CI_Controller {
 			$nav = array('Dashboard' => array("icon"=> "fa fa-tachometer" , "url" => "dashboard") ,
 						 'Maintenance' => array('Project' => array("icon"=> "fa fa-book" , "url" => "users/manage_projects") ,
 						 'Users'  => array("icon"=> "fa fa-users" , "url" => "users/manage_users") ,
-						 'Sponsors'  => array("icon"=> "fa fa-users" , "url" => "users/manage_sponsors"),
-						 'Announcements' => array("icon" => "fa fa-microphone","url"=>"users/manage_announcements") ),
+						 'Sponsors'  => array("icon"=> "fa fa-industry" , "url" => "users/manage_sponsors"),
+						 'Announcements' => array("icon" => "fa fa-microphone","url"=>"users/manage_announcements"),
+						 'Line Items' => array("icon" => "fa fa-tags","url"=>"manage/line_items") ),
 					  	 'Manage Projects'  => array("icon"=> "fa fa-book" , "url" => "users/manage_projstruct"),
 						 'Budget Requests'  => array("icon"=> "fa fa-exchange" , "url" => "users/manage_requests") ,
 						 'Line Budget'  => array( "Add Budget" => array("icon"=> "fa fa-plus" , "url" => "add_budget"),
@@ -930,5 +933,34 @@ class Users extends CI_Controller {
 
 	}
 
+
+	/**manage line items @jx 5/13**/
+
+	public function manage_line_items(){
+		if(!$this->check_token()){
+			//header('Location: login');//die();
+			redirect('login','refresh');
+		}
+
+		$data['logged_in'] = true;
+ 		$data['user'] = ucwords($this->session->userdata('name'));
+ 		$data['page'] = 'Line Items';
+ 		$data['current_page'] = 'manage_line_items';
+ 		$nav = $this->side_nav();
+ 		$data['nav'] = $nav;
+ 		$fields = array('line_item'=>array('type'=>'text','placeholder'=>'Name','label' => 'Line Item Name'),
+ 						'create_date'=>array('type'=>'text','placeholder'=>'Create Date','label' => 'Create Date'),
+ 						'id'=>array('type'=>'hidden','placeholder'=>'id','label' => ''));
+ 		$table_name= 'line_items';
+ 		$response = $this->umodel->get('tbl_line_items');
+
+ 		$data['content'] = createTable($fields,$table_name,$response,$data['current_page']);
+
+		$this->load->view('header');
+		$this->load->view('sidenav', $data);
+		$this->load->view('body', $data);
+		$this->load->view('footer');
+
+	}
 
 }

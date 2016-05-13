@@ -62,6 +62,7 @@ $route['manage/announcements'] = 'users/manage_announcements';
 
 $route['manage/proj_manage_add'] = 'users/proj_manage_add';
 $route['manage/proj_manage_update'] = 'users/proj_manage_update';
+$route['manage/line_items'] = 'users/manage_line_items';
 $route['add_budget'] = 'users/add_budget';
 $route['add_budget_db'] = 'users/add_budget_db';
 $route['deduct_budget'] = 'users/deduct_budget';

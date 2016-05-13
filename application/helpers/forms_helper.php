@@ -423,7 +423,7 @@
         return $content;
   }
 
-  function add_budget_form($response, $sponsors,$cur_page){
+  function add_budget_form($response = array(), $sponsors = array(), $line_items = array(),$cur_page){
     $get = $_GET;
     $display = 'none';
     $message = '';
@@ -488,12 +488,25 @@
         $content .= "</select></div>";
         $content .= "<div class='form-group'>";
         $content .= "<label for='Line Item' class='control-label'>Line Item: </label>";
-        $content .= "<input type='text' name='line_item' value='' class='form-control' placeholder='Food Allowance, Transportation , etc.' required>";
+      //  $content .= "<input type='text' name='line_item' value='' class='form-control' placeholder='Food Allowance, Transportation , etc.' required>";
+        $content .= "<select name='line_item' class='form-control' required>";
+        $content .= "<option value=''></option>";
+        foreach($line_items as $lk=>$lv){
+               // echo "<pre>",print_r($lv),"</pre>";die();
+          $content .= "<option value='".$lv->line_item."' >".$lv->line_item."</option>";
+        }
+        $content .= "</select>";
         $content .= "</div>";
         $content .= "<div class='form-group'>";
         $content .= "<label for='cost' class='control-label'>Budget Top up: </label>";
         $content .= "<input type='number' step='any' name='cost' value='' class='form-control' required>";
         $content .= "</div>";
+
+        $content .= "<div class='form-group'>";
+        $content .= "<label for='remarks' class='control-label'>Remarks: </label>";
+        $content .= "<textarea name='remarks' value='' class='form-control' required></textarea>";
+        $content .= "</div>";
+
 
         $content .= "<div class='form-group'>";
         $content .= "<input type='submit' class='btn btn-primary' name='submit' value='Submit'>";

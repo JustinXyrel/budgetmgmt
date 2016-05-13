@@ -8,10 +8,11 @@
 }
 
 h3.announce{
-	background: #BC953C;
+	background: #8ABC3C;
     color: #fff;
     padding: 4px;
     text-align: center;
+    border-radius: 6px;
 }
 
 .success{

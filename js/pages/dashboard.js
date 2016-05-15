@@ -387,15 +387,19 @@ $(function () {
             if($(this).attr('type') != 'hidden'){
               var v = $('tr[ref='+web+']').find('td[name='+n+']').text();
 
-              if(n != 'role'){
+              if(n != 'role' && n != 'sponsor_id'){
                $(this).val(v);
-             }else if( n =='role'){
+              }else if( n =='role'){
                 if(v =='Project Member'){
                   $(this).val('3');
                 }else{
                   $(this).val('2');
                 }
-             }
+             }else if(n == 'sponsor_id'){
+              console.log(v);
+              console.log($(this));
+                $(this).val($('tr[ref='+web+']').find('td[name='+n+']').attr('ref'));
+             }   
             }
            // console.log(e.attr('type'));
           })
@@ -813,6 +817,35 @@ console.log(web);
          $('form .docs:last').append(form.clone());
          $('form .docs:last input[type=file]').removeAttr('required')
       });
+
+    $('select[name=sponsor_id]').change(function(){
+      var sponsors = JSON.parse($('select[name=sponsor_id]  option:selected').attr('ref'));
+      console.log(sponsors);
+      $('select[name=b_project_sponsors').find('option:gt(0)').remove();
+     if( $('select[name=grant_id]').length  > 0){
+
+      $('select[name=b_grant_id').find('option:gt(0)').remove();
+    }
+  });
+
+     $(document).on('change','select[name=sponsor_id]',function(){
+
+    //  var grant_item = ($(this).attr('ref') !== undefined) ? JSON.parse($(this).attr('ref')) : {} ;
+    var grant_item = JSON.parse($('select[name=sponsor_id]  option:selected').attr('ref'));
+console.log(grant_item);
+
+  
+      $('select[name=grant_id]').find('option:gt(0)').remove();
+
+
+      $.each(grant_item,function(i,e){
+        var opts = "<option id="+i+" value='"+i+"' avi = "+e+">"+e+"</option>";
+        $('select[name=grant_id]').append(opts);
+      });
+
+
+    });
+   
 
 });
 

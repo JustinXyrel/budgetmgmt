@@ -235,12 +235,16 @@ class Users extends CI_Controller {
  		//echo "<pre>",print_r($response),"</pre>";die();
  		//$leaders = $this->umodel->get_where('tbl_users',array('role'=>'2'));
  		$sponsors = $this->umodel->get('tbl_sponsors');
-
+ 		$grants = $this->umodel->get('tbl_grants');
+ 		$f_grants = array();
+ 		foreach($grants as $k=>$v){
+ 			$f_grants[$v->sponsor_id][$v->id] = $v->name ;
+ 		}
  		$table_name= 'manage';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
  		
- 		$data['content'] = add_budget_form($response,$sponsors,$data['current_page']);
+ 		$data['content'] = add_budget_form($response,$sponsors,$f_grants,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);
@@ -581,6 +585,7 @@ class Users extends CI_Controller {
 						 'Maintenance' => array('Project' => array("icon"=> "fa fa-book" , "url" => "users/manage_projects") ,
 						 'Users'  => array("icon"=> "fa fa-users" , "url" => "users/manage_users") ,
 						 'Sponsors'  => array("icon"=> "fa fa-users" , "url" => "users/manage_sponsors"),
+						 'Grants'  => array("icon"=> "fa fa-user-plus" , "url" => "users/manage_grants"),
 						 'Announcements' => array("icon" => "fa fa-microphone","url"=>"users/manage_announcements") ),
 					  	 'Manage Projects'  => array("icon"=> "fa fa-book" , "url" => "users/manage_projstruct"),
 						 'Budget Requests'  => array("icon"=> "fa fa-exchange" , "url" => "users/manage_requests") ,
@@ -929,6 +934,43 @@ class Users extends CI_Controller {
 	 	}
 
 	}
+
+	public function manage_grants(){
+		if(!$this->check_token()){
+			//header('Location: login');//die();
+			redirect('login','refresh');
+		}
+
+		$data['logged_in'] = true;
+ 		$data['user'] = ucwords($this->session->userdata('name'));
+ 		$data['page'] = 'Grants';
+ 		$data['current_page'] = 'manage_grants';
+ 		$nav = $this->side_nav();
+ 		$data['nav'] = $nav;
+ 		$grants = $this->umodel->get('tbl_sponsors');
+ 		$f_grants = array();
+ 		foreach($grants as $k=>$v){
+ 			$f_grants[$v->id] = $v;
+ 		}
+
+ 		$fields = array('name'=>array('type'=>'text','placeholder'=>'Name','label' => 'Name'),
+ 						'sponsor_id'=>array('type'=>'select','placeholder'=>'Sponsor Name','label' => 'Sponsor Name','ref'=> json_encode($f_grants)),
+ 						'create_date'=>array('type'=>'text','placeholder'=>'Create Date','label' => 'Create Date'),
+ 						'id'=>array('type'=>'hidden','placeholder'=>'id','label' => ''));
+ 		$table_name= 'grants';
+ 		$response = $this->umodel->get('tbl_grants');
+
+
+
+ 		$data['content'] = createTable($fields,$table_name,$response,$data['current_page']);
+
+		$this->load->view('header');
+		$this->load->view('sidenav', $data);
+		$this->load->view('body', $data);
+		$this->load->view('footer');
+
+	}
+
 
 
 }

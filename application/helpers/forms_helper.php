@@ -63,6 +63,11 @@
               }else if($kf == 'password'){
                 $content .= "<td name='$kf'>********</td>";
 
+              }elseif($kf == 'sponsor_id'){
+                 $sponsors = json_decode($ref,true);
+                 $sname = $sponsors[$v->sponsor_id]['name'];
+                 $content .= "<td name='$kf' ref='$v->sponsor_id'>".ucwords($sname)."</td>";
+
               }else{
                  $content .= "<td name='$kf'>".ucwords($v->$kf)."</td>";
               }
@@ -118,6 +123,21 @@
               $content .= "<option value='2'>Project Leader</option>";
               $content .= "<option value='3'>Project Member</option>";
               $content .= "</select>";
+            }elseif($k == 'sponsor_id'){
+                $sponsors = json_decode($ref,true);
+                $content .= "<select type=".$type." name='".$k."' class='form-control required' id='".$k."'>";
+                $content .= "<option value=''></option>";
+                if(!empty($sponsors)){
+                  foreach($sponsors as $sk=>$sv){
+                    $content .= "<option value='".$sv['id']."'>".$sv['name']."</option>";
+                  }
+                }
+
+                $content .= "</select>";
+
+                // echo "<pre>",print_r($sponsors),"</pre>";die();
+
+
             }else{
               if($type == 'textarea'){
                 $content .= "<textarea name='".$k."' id='".$k."' class='form-control required' placeholder='".$placeholder."'></textarea>";
@@ -163,7 +183,19 @@
                           $content .= "<option value='2'>Project Leader</option>";
                           $content .= "<option value='3'>Project Member</option>";
                           $content .= "</select>";
-                        }else{
+                        }elseif($k == 'sponsor_id'){
+                          $sponsors = json_decode($ref,true);
+                          $content .= "<select type=".$type." name='".$k."' class='form-control required' id='".$k."'>";
+                          $content .= "<option value=''></option>";
+                          if(!empty($sponsors)){
+                            foreach($sponsors as $sk=>$sv){
+                              $content .= "<option value='".$sv['id']."'>".$sv['name']."</option>";
+                            }
+                          }
+
+                          $content .= "</select>";
+
+                       }else{
                            if($type == 'textarea'){
                              $content .= "<textarea name='".$k."' id='".$k."' class='form-control required' placeholder='".$placeholder."'></textarea>";
                             }else{
@@ -423,7 +455,7 @@
         return $content;
   }
 
-  function add_budget_form($response, $sponsors,$cur_page){
+  function add_budget_form($response, $sponsors,$grants,$cur_page){
     $get = $_GET;
     $display = 'none';
     $message = '';
@@ -481,10 +513,25 @@
         $content .= "<div class='form-group'>";
         $content .= "<label for='project leader' class='control-label'>Project Fund: </label>";
         $content .= "<select name='sponsor_id' class='form-control' required>";
+          $content .= "<option value='' ></option>";
 
         foreach($sponsors as $sk=>$sv){
-          $content .= "<option value=".$sv->id.">".$sv->name."</option>";
+
+          // print_r($sv);die();
+          if(isset($grants[$sv->id])){
+            $encode =  json_encode($grants[$sv->id]);
+          }else{
+            $encode =  json_encode(array());
+
+          }
+          $content .= "<option value='".$sv->id."' ref= '".$encode."'>".$sv->name."</option>";
         }
+        $content .= "</select></div>";
+
+         $content .= "<div class='form-group'>";
+        $content .= "<label for='sponsor grant' class='control-label'>Grant Names: </label>";
+        $content .= "<select name='grant_id' class='form-control' required>";
+
         $content .= "</select></div>";
         $content .= "<div class='form-group'>";
         $content .= "<label for='Line Item' class='control-label'>Line Item: </label>";

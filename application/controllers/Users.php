@@ -268,9 +268,14 @@ class Users extends CI_Controller {
  		$response = $this->umodel->get_available_budget(0);
         $parse = json_decode($response,true);
  		$table_name= 'manage';
+ 		$grants = $this->umodel->get('tbl_grants');
+ 		$f_grants = array();
+ 		foreach($grants as $k=>$v){
+ 			$f_grants[$v->sponsor_id][$v->id] = $v->name ;
+ 		}
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
- 		$data['content'] = deduct_budget_form($parse['response'],$parse['projects'], $parse['sponsors'] , $parse['project_leader'],$parse['line_item_l'], $parse['line_item'],$data['current_page']);
+ 		$data['content'] = deduct_budget_form($parse['response'],$parse['projects'], $parse['sponsors'] , $parse['project_leader'],$parse['line_item_l'], $parse['line_item'],$f_grants,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);
@@ -591,6 +596,7 @@ class Users extends CI_Controller {
 						 'Budget Requests'  => array("icon"=> "fa fa-exchange" , "url" => "users/manage_requests") ,
 						 'Line Budget'  => array( "Add Budget" => array("icon"=> "fa fa-plus" , "url" => "add_budget"),
 						 						  "Reduce Budget" => array ("icon" => "fa fa-minus", "url"=> "deduct_budget"),),
+						 'Transaction Logs'  => array("icon"=> "fa fa-money" , "url" => "users/all_trans_logs"),
 						 'Account Settings'  => array("icon"=> "fa fa-gear" , "url" => "users/settings"));
 		}else if($role == '2'){
 			$nav = array('Dashboard' => array("icon"=> "fa fa-tachometer" , "url" => "dashboard") ,
@@ -970,6 +976,34 @@ class Users extends CI_Controller {
 		$this->load->view('footer');
 
 	}
+
+	public function all_trans_logs(){
+		if(!$this->check_token()){
+			//header('Location: login');//die();
+			redirect('login','refresh');
+		}
+
+		$data['logged_in'] = true;
+ 		$data['user'] = ucwords($this->session->userdata('name'));
+ 		$user_id = ucwords($this->session->userdata('user_id'));
+
+ 		$data['page'] = 'Transaction Logs';
+ 		$data['current_page'] = 'all_trans_logs';
+ 		$response = $this->umodel->get_trans_logs();
+ 		//echo "<pre>",print_r($response),"</pre>";die();
+ 		$table_name= 'manage_requests';
+ 		$nav = $this->side_nav();
+ 		$data['nav'] = $nav;
+
+ 		$data['content'] = allTransactionLogsTable($response,$data['current_page']);
+		$this->load->view('header');
+		$this->load->view('sidenav', $data);
+		$this->load->view('body', $data);
+		$this->load->view('footer');
+	
+
+	}
+
 
 
 

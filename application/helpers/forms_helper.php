@@ -1122,7 +1122,7 @@
       return $content;
   }
 
-  function deduct_budget_form($response,$projects, $sponsors, $project_leader, $line_item_l, $line_item,$cur_page){
+  function deduct_budget_form($response,$projects, $sponsors, $project_leader, $line_item_l, $line_item, $grant_list,$cur_page){
     $get = $_GET;
     $display = 'none';
     $message = '';
@@ -1181,6 +1181,12 @@
 
         $content .= "</div>";
 
+         $content .= "<div class='form-group'>";
+        $content .= "<label for='sponsor grant' class='control-label'>Grant Names: </label>";
+        $content .= "<input name='grant_list' class='form-control' type='hidden' value='".json_encode($grant_list)."'>";
+        $content .= "<select name='b_grant_id' class='form-control' required>";
+
+        $content .= "</select></div>";
 
       $content .= "<div class='form-group'>";
         $content .= "<label for='project leader' class='control-label'>Project Leader: </label>";
@@ -1269,4 +1275,74 @@
 
       return $content;
   }
+
+   //All Transaction Logs Table
+   function allTransactionLogsTable($response,$cur_page){
+      $get = $_GET;
+      $display = 'none';
+      $message = '';
+      if(isset($get) && !empty($get)){
+        extract($get);
+        if(isset($s) && $s == '1'){
+          $display = 'block';
+          $message = 'Successfully approved.';
+        }else if(isset($s) && $s == '2'){
+          $display = 'block';
+          $message = 'Successfully rejected.';
+        }else{
+          $display = 'none';
+          $message = '';
+        }
+      }
+      $content = "<div class='box'>";
+      $content .= "<div class='box-body'>";
+
+
+      $content .= "<div class='success' style='display:$display'>$message</div>";
+      $content .= "<div class='row'>";
+      $content .= "<div class='col-sm-12'>";
+      $content .= "<table id='budget_requests' name='budget_requests' class='table table-bordered table-striped'>";
+      $content .= "<thead>
+                      <tr>
+                        <th>Project Name</th>
+                        <th>Sponsor</th>
+                        <th>Project Leader</th>
+                        <th>Grant Name </th>
+                        <th>Line Item</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Remarks</th>
+                        <th>Date</th>
+                      </tr>
+                   </thead>";
+      $content .= "<tbody>";
+
+              foreach($response as $k=>$v){
+                   $content .= "<tr>";
+                   $content .= "<td>".$v->project_name."</td>";
+                   $content .= "<td>".$v->sponsor_name."</td>";
+                   $content .= "<td>".$v->project_leader_name."</td>";
+                   $content .= "<td>".$v->grant_name."</td>";
+                   $content .= "<td>".$v->line_item."</td>";
+                   $content .= "<td width='8%'>".$v->cost."</td>";
+                   $content .= "<td>".$v->type."</td>";
+                   $content .= "<td>".$v->remarks."</td>";
+                   $content .= "<td>".$v->trans_date."</td>";
+                   $content .= "</tr>";
+              }
+
+      $content .= "<tbody>";
+      $content .= "</table>";
+
+      $content .= "<input type='hidden' class='form-control' name='current_page' value='".$cur_page."' >";
+
+      $content .= "</div>";
+      $content .= "</div>";
+
+
+      $content .= "</div>";
+      $content .= "</div>";
+      return $content;
+  }
+
 ?>

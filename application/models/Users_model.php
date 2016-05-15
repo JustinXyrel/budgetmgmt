@@ -169,13 +169,13 @@ class Users_model extends CI_Model {
         		$sponsors[$v->project_id][$v->sponsor_id] = $v->sponsor_name;   
                 $project_leader[$v->project_id][$v->sponsor_id][$v->project_leader] = $v->leader_name;   
         		$line_item[$v->project_id][$v->sponsor_id][$v->line_item] = $v->balance;  
-                $line_item_l[$v->project_id][$v->sponsor_id][$v->project_leader][$v->line_item] = $v->balance;  
+                $line_item_l[$v->project_id][$v->sponsor_id][$v->grant_id][$v->project_leader][$v->line_item] = $v->balance;  
 
                 $avail_budget[] = $v; 
 
      
         }
-// echo "<pre>",print_r($project_leader),"</pre>";die();
+// echo "<pre>",print_r($line_item_l),"</pre>";die();
 		return json_encode(array("response" => $arr,"projects"=>$projects,"sponsors"=> $sponsors, "project_leader" => $project_leader,"line_item_l" => $line_item_l,"line_item" =>$line_item , "avail_budget" => $avail_budget)) ;
 
 	}
@@ -214,11 +214,12 @@ class Users_model extends CI_Model {
 
     }
 
-    public function get_trans_logs($id=null){
-        $this->db->select("tbr.*,ts.name as sponsor_name,tp.name as project_name ,tu.name");
+    public function  get_trans_logs($id=null){
+        $this->db->select("tbr.*,tu.name as project_leader_name , tg.name as grant_name,ts.name as sponsor_name,tp.name as project_name ,tu.name");
         $this->db->from('tbl_trans as tbr');
         $this->db->join('tbl_sponsors as ts', 'tbr.sponsor_id = ts.id ','LEFT');
         $this->db->join('tbl_projects as tp', 'tbr.project_id = tp.id','LEFT');
+        $this->db->join('tbl_grants as tg', 'tbr.grant_id = tg.id','LEFT');
         $this->db->join('tbl_users as tu', 'tbr.project_leader = tu.id','LEFT');
         if(!empty($id)){
             $this->db->where('tbr.project_leader',$id); 

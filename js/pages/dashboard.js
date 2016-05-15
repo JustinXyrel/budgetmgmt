@@ -518,10 +518,10 @@ console.log(web);
     $('select[name=b_project_id]').change(function(){
       var sponsors = JSON.parse($('select[name=b_project_id]  option:selected').attr('ref'));
       console.log(sponsors);
-      $('select[name=b_project_sponsors').find('option:gt(0)').remove();
+      $('select[name=b_project_sponsors]').find('option:gt(0)').remove();
      if( $('select[name=b_project_leader]').length  > 0){
 
-      $('select[name=b_project_leader').find('option:gt(0)').remove();
+      $('select[name=b_project_leader]').find('option:gt(0)').remove();
     }
 
       // var opts = "<option id='' value=''></option>";
@@ -536,20 +536,26 @@ console.log(web);
     $('select[name=b_project_sponsors]').change(function(){
       var line_item = JSON.parse($('input[name=list_line_item]').val());
       var project_id =  $('select[name=b_project_id] option:selected').val();
+      var grant_list = JSON.parse($('input[name=grant_list]').val());
       var project_sponsor =  $('select[name=b_project_sponsors] option:selected').val();
       console.log(line_item);
 
       console.log(line_item[project_id][project_sponsor]);
-      $('select[name=b_line_item').find('option:gt(0)').remove();
+      $('select[name=b_line_item]').find('option:gt(0)').remove();
 
      if( $('select[name=b_project_leader]').length  > 0){
 
-       $('select[name=b_project_leader').find('option:gt(0)').remove();
+       $('select[name=b_project_leader]').find('option:gt(0)').remove();
     }
 
       $.each(line_item[project_id][project_sponsor],function(i,e){
         var opts = "<option id="+i+" value='"+i+"' avi = "+e+">"+i+"</option>";
         $('select[name=b_line_item]').append(opts);
+      });
+
+       $.each(grant_list[project_sponsor],function(i,e){
+        var opts = "<option id="+i+" value='"+i+"' avi = "+e+">"+e+"</option>";
+        $('select[name=b_grant_list]').append(opts);
       });
     });
 
@@ -557,7 +563,7 @@ console.log(web);
     $('select[name=b_line_item]').change(function(){
       var cost= $('select[name=b_line_item] option:selected').attr('avi');
     
-      $('input[name=available_budget').val(cost);
+      $('input[name=available_budget]').val(cost);
     });
 
     if( $('select[name=b_project_leader]').length  > 0){
@@ -565,28 +571,36 @@ console.log(web);
         var leader_list = JSON.parse($('input[name=project_leader_list]').val());
         var project_id =  $('select[name=b_project_id] option:selected').val();
         var project_sponsor =  $('select[name=b_project_sponsors] option:selected').val();
-        
+        var grant_list = JSON.parse($('input[name=grant_list]').val());
+
         console.log(project_id);
         console.log(project_sponsor)
-        $('select[name=b_line_item').find('option:gt(0)').remove();
+        $('select[name=b_line_item]').find('option:gt(0)').remove();
 
 
         $.each(leader_list[project_id][project_sponsor],function(i,e){
           var opts = "<option id="+i+" value='"+i+"' avi = "+e+">"+e+"</option>";
           $('select[name=b_project_leader]').append(opts);
         });
+        console.log(project_sponsor);
+        console.log(grant_list);
+         $.each(grant_list[project_sponsor],function(i,e){
+          var opts = "<option id="+i+" value='"+i+"' avi = "+e+">"+e+"</option>";
+          $('select[name=b_grant_id]').append(opts);
+       });
       });
 
       $('select[name=b_project_leader]').change(function(){
         var item_list = JSON.parse($('input[name=list_line_item]').val());
         var project_id =  $('select[name=b_project_id] option:selected').val();
+        var grant_id =  $('select[name=b_grant_id] option:selected').val();
         var project_sponsor =  $('select[name=b_project_sponsors] option:selected').val();
         var project_leader =  $('select[name=b_project_leader] option:selected').val();
 
-        $('select[name=b_line_item').find('option:gt(0)').remove();
+        $('select[name=b_line_item]').find('option:gt(0)').remove();
 
 
-        $.each(item_list[project_id][project_sponsor][project_leader],function(i,e){
+        $.each(item_list[project_id][project_sponsor][grant_id][project_leader],function(i,e){
           var opts = "<option id="+i+" value='"+i+"' avi = "+e+">"+i+"</option>";
           $('select[name=b_line_item]').append(opts);
         });
@@ -615,6 +629,8 @@ console.log(web);
     $(document).on('change','select[name=b_project_sponsors]',function(){
       var tr =  $(this).parents('tr');
       var line_item = JSON.parse($(tr).find('input[name=list_line_item]').val());
+      var grant_list = JSON.parse($(tr).find('input[name=grant_list]').val());
+
       var project_id =  $(tr).find('select[name=b_project_id] option:selected').val();
       var project_sponsor =  $(tr).find('select[name=b_project_sponsors] option:selected').val();
 
@@ -627,6 +643,11 @@ console.log(web);
       $.each(line_item[project_id][project_sponsor],function(i,e){
         var opts = "<option id="+i+" value='"+i+"' avi = "+e+">"+i+"</option>";
         $(tr).find('select[name=b_line_item]').append(opts);
+      });
+
+      $.each(grant_list[project_sponsor],function(i,e){
+        var opts = "<option id="+i+" value='"+i+"' avi = "+e+">"+e+"</option>";
+        $(tr).find('select[name=b_grant_list]').append(opts);
       });
 
       $(tr).find('input[name=project_id]').val(project_id);
@@ -821,10 +842,10 @@ console.log(web);
     $('select[name=sponsor_id]').change(function(){
       var sponsors = JSON.parse($('select[name=sponsor_id]  option:selected').attr('ref'));
       console.log(sponsors);
-      $('select[name=b_project_sponsors').find('option:gt(0)').remove();
+      $('select[name=b_project_sponsors]').find('option:gt(0)').remove();
      if( $('select[name=grant_id]').length  > 0){
 
-      $('select[name=b_grant_id').find('option:gt(0)').remove();
+      $('select[name=b_grant_id]').find('option:gt(0)').remove();
     }
   });
 

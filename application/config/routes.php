@@ -58,6 +58,8 @@ $route['dashboard'] = 'users/dashboard';
 $route['manage/add'] = 'users/add_record';
 $route['manage/update'] = 'users/update_record';
 $route['manage/announcements'] = 'users/manage_announcements';
+$route['manage/grants'] = 'users/grants';
+
 
 
 $route['manage/proj_manage_add'] = 'users/proj_manage_add';

@@ -63,6 +63,11 @@
               }else if($kf == 'password'){
                 $content .= "<td name='$kf'>********</td>";
 
+              }elseif($kf == 'sponsor_id'){
+                 $sponsors = json_decode($ref,true);
+                 $sname = $sponsors[$v->sponsor_id]['name'];
+                 $content .= "<td name='$kf' ref='$v->sponsor_id'>".ucwords($sname)."</td>";
+
               }else{
                  $content .= "<td name='$kf'>".ucwords($v->$kf)."</td>";
               }
@@ -118,6 +123,21 @@
               $content .= "<option value='2'>Project Leader</option>";
               $content .= "<option value='3'>Project Member</option>";
               $content .= "</select>";
+            }elseif($k == 'sponsor_id'){
+                $sponsors = json_decode($ref,true);
+                $content .= "<select type=".$type." name='".$k."' class='form-control required' id='".$k."'>";
+                $content .= "<option value=''></option>";
+                if(!empty($sponsors)){
+                  foreach($sponsors as $sk=>$sv){
+                    $content .= "<option value='".$sv['id']."'>".$sv['name']."</option>";
+                  }
+                }
+
+                $content .= "</select>";
+
+                // echo "<pre>",print_r($sponsors),"</pre>";die();
+
+
             }else{
               if($type == 'textarea'){
                 $content .= "<textarea name='".$k."' id='".$k."' class='form-control required' placeholder='".$placeholder."'></textarea>";
@@ -163,7 +183,19 @@
                           $content .= "<option value='2'>Project Leader</option>";
                           $content .= "<option value='3'>Project Member</option>";
                           $content .= "</select>";
-                        }else{
+                        }elseif($k == 'sponsor_id'){
+                          $sponsors = json_decode($ref,true);
+                          $content .= "<select type=".$type." name='".$k."' class='form-control required' id='".$k."'>";
+                          $content .= "<option value=''></option>";
+                          if(!empty($sponsors)){
+                            foreach($sponsors as $sk=>$sv){
+                              $content .= "<option value='".$sv['id']."'>".$sv['name']."</option>";
+                            }
+                          }
+
+                          $content .= "</select>";
+
+                       }else{
                            if($type == 'textarea'){
                              $content .= "<textarea name='".$k."' id='".$k."' class='form-control required' placeholder='".$placeholder."'></textarea>";
                             }else{
@@ -423,7 +455,8 @@
         return $content;
   }
 
-  function add_budget_form($response = array(), $sponsors = array(), $line_items = array(),$cur_page){
+
+  function add_budget_form($response = array(), $sponsors = array(), $grants = array() ,$cur_page){
     $get = $_GET;
     $display = 'none';
     $message = '';
@@ -481,10 +514,25 @@
         $content .= "<div class='form-group'>";
         $content .= "<label for='project leader' class='control-label'>Project Fund: </label>";
         $content .= "<select name='sponsor_id' class='form-control' required>";
+          $content .= "<option value='' ></option>";
 
         foreach($sponsors as $sk=>$sv){
-          $content .= "<option value=".$sv->id.">".$sv->name."</option>";
+
+          // print_r($sv);die();
+          if(isset($grants[$sv->id])){
+            $encode =  json_encode($grants[$sv->id]);
+          }else{
+            $encode =  json_encode(array());
+
+          }
+          $content .= "<option value='".$sv->id."' ref= '".$encode."'>".$sv->name."</option>";
         }
+        $content .= "</select></div>";
+
+         $content .= "<div class='form-group'>";
+        $content .= "<label for='sponsor grant' class='control-label'>Grant Names: </label>";
+        $content .= "<select name='grant_id' class='form-control' required>";
+
         $content .= "</select></div>";
         $content .= "<div class='form-group'>";
         $content .= "<label for='Line Item' class='control-label'>Line Item: </label>";
@@ -1088,7 +1136,7 @@
       return $content;
   }
 
-  function deduct_budget_form($response,$projects, $sponsors, $project_leader, $line_item_l, $line_item,$cur_page){
+  function deduct_budget_form($response,$projects, $sponsors, $project_leader, $line_item_l, $line_item, $grant_list,$cur_page){
     $get = $_GET;
     $display = 'none';
     $message = '';
@@ -1147,6 +1195,12 @@
 
         $content .= "</div>";
 
+         $content .= "<div class='form-group'>";
+        $content .= "<label for='sponsor grant' class='control-label'>Grant Names: </label>";
+        $content .= "<input name='grant_list' class='form-control' type='hidden' value='".json_encode($grant_list)."'>";
+        $content .= "<select name='b_grant_id' class='form-control' required>";
+
+        $content .= "</select></div>";
 
       $content .= "<div class='form-group'>";
         $content .= "<label for='project leader' class='control-label'>Project Leader: </label>";
@@ -1235,4 +1289,74 @@
 
       return $content;
   }
+
+   //All Transaction Logs Table
+   function allTransactionLogsTable($response,$cur_page){
+      $get = $_GET;
+      $display = 'none';
+      $message = '';
+      if(isset($get) && !empty($get)){
+        extract($get);
+        if(isset($s) && $s == '1'){
+          $display = 'block';
+          $message = 'Successfully approved.';
+        }else if(isset($s) && $s == '2'){
+          $display = 'block';
+          $message = 'Successfully rejected.';
+        }else{
+          $display = 'none';
+          $message = '';
+        }
+      }
+      $content = "<div class='box'>";
+      $content .= "<div class='box-body'>";
+
+
+      $content .= "<div class='success' style='display:$display'>$message</div>";
+      $content .= "<div class='row'>";
+      $content .= "<div class='col-sm-12'>";
+      $content .= "<table id='budget_requests' name='budget_requests' class='table table-bordered table-striped'>";
+      $content .= "<thead>
+                      <tr>
+                        <th>Project Name</th>
+                        <th>Sponsor</th>
+                        <th>Project Leader</th>
+                        <th>Grant Name </th>
+                        <th>Line Item</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Remarks</th>
+                        <th>Date</th>
+                      </tr>
+                   </thead>";
+      $content .= "<tbody>";
+
+              foreach($response as $k=>$v){
+                   $content .= "<tr>";
+                   $content .= "<td>".$v->project_name."</td>";
+                   $content .= "<td>".$v->sponsor_name."</td>";
+                   $content .= "<td>".$v->project_leader_name."</td>";
+                   $content .= "<td>".$v->grant_name."</td>";
+                   $content .= "<td>".$v->line_item."</td>";
+                   $content .= "<td width='8%'>".$v->cost."</td>";
+                   $content .= "<td>".$v->type."</td>";
+                   $content .= "<td>".$v->remarks."</td>";
+                   $content .= "<td>".$v->trans_date."</td>";
+                   $content .= "</tr>";
+              }
+
+      $content .= "<tbody>";
+      $content .= "</table>";
+
+      $content .= "<input type='hidden' class='form-control' name='current_page' value='".$cur_page."' >";
+
+      $content .= "</div>";
+      $content .= "</div>";
+
+
+      $content .= "</div>";
+      $content .= "</div>";
+      return $content;
+  }
+
 ?>

@@ -867,6 +867,24 @@ console.log(grant_item);
 
     });
    
+   $(document).on('click','button#rem_attach',function(){
+        var ref_id = $(this).attr('ref');
+        var path = $(this).attr('path');
+        var processs = 'documents';
+        var conf = confirm("Are you sure you want to remove the attachment?");
+        if(conf){
+            $.ajax({
+              type: "POST",
+              url: 'remove_attachment',
+              data: { 'process': processs, 'ref_id': ref_id ,'path': path},
+              success: function(data){
+                console.log(data);
+                   $("tr[ref='"+ref_id+"']").fadeOut();
 
+              }
+            });
+          
+        }
+    })
 });
 

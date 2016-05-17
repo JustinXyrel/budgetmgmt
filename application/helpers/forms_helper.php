@@ -912,6 +912,7 @@
                         <th>Request</th>
                         <th>Date Requested</th>
                         <th>Status</th>
+                        <th>Attachments</th>
                         <th width='10%'>Upload Document</th>
 
                       </tr>
@@ -938,15 +939,21 @@
                      $content .= "<td>Rejected</td>";
                    }
 
+                    $content .= "<td>";
 
                    if(isset($documents[$v->id]) && !empty($documents[$v->id])){
+                      $content .= '<table>';
                       foreach($documents[$v->id] as $dk => $dv){
                         $ext = explode("/",$dv->filename);
                         $filename = end($ext);
-                        $attached .= "<p><a href='".base_url()."support_documents/".$dv->filename."' download>$filename</a></p>";
+                        $content .= "<tr ref='".$dv->id."'><td width='80%'><a href='".base_url()."support_documents/".$dv->filename."' download>$filename</a></td><td width='20%'><button type='button' id='rem_attach' ref='".$dv->id."' path='".$dv->filename."'><i class='fa fa-remove'></i></button></td></tr>";
                       }
+                        $content .= '</table>';
+
                    }
-                   $content .= "<td>$attached<a href='upload_document?ref=".$v->id."'><button class='btn btn-primary fa arrow-up'><span class='fa-arrow-up'></span></button></a></td>";
+                   $content .= "</td>";
+
+                   $content .= "<td><a href='upload_document?ref=".$v->id."'><button class='btn btn-primary fa arrow-up'><span class='fa-arrow-up'></span></button></a></td>";
 
                    $content .= "</tr>";
               }

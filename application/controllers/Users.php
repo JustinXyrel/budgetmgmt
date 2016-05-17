@@ -1044,4 +1044,18 @@ class Users extends CI_Controller {
 
 	}
 
+	/**remove attachment**/
+	public function remove_attachment()
+	{	
+		$tbl = $this->input->post('process');		
+		$cur_page = $this->input->post('current_page');	
+		$ref_id = $this->input->post('ref_id');	
+		$path = $this->input->post('path');	
+		$this->db->delete('tbl_'.$tbl , array('id' => $ref_id)); 
+		echo $this->db->last_query();die();
+		unlink("support_documents/".$path);
+
+		echo true;
+
+	}
 }

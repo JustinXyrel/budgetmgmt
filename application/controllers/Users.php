@@ -633,11 +633,12 @@ class Users extends CI_Controller {
  		$data['page'] = 'Manage Requests';
  		$data['current_page'] = 'manage_requests';
  		$response = $this->umodel->get_budget_requests();
+ 		$documents =  $this->umodel->get_documents();
  		$table_name= 'manage_requests';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
 
- 		$data['content'] = manageRequestsTable($response,$data['current_page']);
+ 		$data['content'] = manageRequestsTable($response,$documents,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);

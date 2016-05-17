@@ -738,7 +738,7 @@
         return $content;
   }
 
-   function manageRequestsTable($response,$cur_page){
+   function manageRequestsTable($response,$documents,$cur_page){
       $get = $_GET;
       $display = 'none';
       $display_err = 'none';
@@ -781,26 +781,41 @@
                         <th>Request</th>
                         <th>Remarks</th>
                         <th>Date Requested</th>
+                        <th>Supporting Docs</th>
                         <th></th>
                       </tr>
                    </thead>";
       $content .= "<tbody>";
 
               foreach($response as $k=>$v){
+                   $attached = '';
                    $content .= "<tr>";
                    $content .= "<td>".$v->project_name."</td>";
                    $content .= "<td>".$v->sponsor_name."</td>";
                    $content .= "<td>".$v->name."</td>";
                    $content .= "<td>".$v->line_item."</td>";
                    $content .= "<td width='8%'>".$v->cost."</td>";
-                  $content .= "<td>".$v->remarks."</td>";
+                   $content .= "<td>".$v->remarks."</td>";
                    $content .= "<td>".$v->create_date."</td>";
+
+                   if(isset($documents[$v->id]) && !empty($documents[$v->id])){
+                      foreach($documents[$v->id] as $dk => $dv){
+                        $ext = explode("/",$dv->filename);
+                        $filename = end($ext);
+                        $attached .= "<p><a href='".base_url()."support_documents/".$dv->filename."' download>$filename</a></p>";
+                      }
+                   }
+
+                   $content .= "<td>".$attached."</td>";
+
                    if($v->is_granted == '0'){
-                      $content .= "<td><button class='btn btn-block btn-info' ref=".$v->id." id='budget_approve'>Approved</button><button class='btn btn-block btn-danger' ref=".$v->id." id='budget_reject'>Reject</button></td>";
+                      $content .= "<td><button class='btn btn-block btn-info' ref=".$v->id." id='budget_approve'>Approved</button><button class='btn btn-block btn-danger' ref=".$v->id." id='budget_reject'>Reject</button><button class='btn btn-block btn-warning' ref=".$v->id." id='budget_request_info'>Request Info</button></td>";
                    }elseif($v->is_granted == '1'){
                       $content .= "<td>Approved</td>";
                    }elseif($v->is_granted == '3'){
                      $content .= "<td>Insufficient funds</td>";
+                   }elseif($v->is_granted == '4'){
+                     $content .= "<td>Waiting for more info</td>";
                    }else{
                      $content .= "<td>Rejected</td>";
                    }

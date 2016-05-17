@@ -186,6 +186,7 @@ class Users_model extends CI_Model {
         $this->db->join('tbl_sponsors as ts', 'tbr.sponsor_id = ts.id ','LEFT');
         $this->db->join('tbl_projects as tp', 'tbr.project_id = tp.id','LEFT');
 		$this->db->join('tbl_users as tu', 'tbr.project_leader = tu.id','LEFT');
+
 		if(!empty($id)){
 			$this->db->where('tbr.id',$id);	
 		}
@@ -313,6 +314,26 @@ class Users_model extends CI_Model {
 		return $response;
 
 	}
+
+     public function get_documents($id=null){
+        $this->db->select("*");
+        $this->db->from('tbl_documents');
+
+        if(!empty($id)){
+            $this->db->where('tbr.id',$id); 
+        }
+
+        $query = $this->db->get();
+        $response = $query->result();
+        $documents = array();
+
+        foreach($response as $k => $v){
+            $documents[$v->budget_request_id][] = $v;
+        }
+
+        return $documents ;
+
+    }
 
  
 

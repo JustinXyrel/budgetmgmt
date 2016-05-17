@@ -879,7 +879,7 @@
   }
 
   //Budget History Table
-     function budgetHistoryTable($response,$cur_page){
+     function budgetHistoryTable($response,$documents,$cur_page){
       $get = $_GET;
       $display = 'none';
       $message = '';
@@ -919,6 +919,7 @@
       $content .= "<tbody>";
 
               foreach($response as $k=>$v){
+                   $attached = '';
                    $content .= "<tr>";
                    $content .= "<td>".$v->project_name."</td>";
                    $content .= "<td>".$v->sponsor_name."</td>";
@@ -931,10 +932,21 @@
                       $content .= "<td>Approved</td>";
                    }elseif($v->is_granted == '3'){
                      $content .= "<td>Insufficient funds</td>";
+                   }elseif($v->is_granted == '4'){
+                     $content .= "<td>Requesting for more info</td>";
                    }else{
                      $content .= "<td>Rejected</td>";
                    }
-                   $content .= "<td><a href='upload_document?ref=".$v->id."'><button class='btn btn-primary fa arrow-up'><span class='fa-arrow-up'></span></button></a></td>";
+
+
+                   if(isset($documents[$v->id]) && !empty($documents[$v->id])){
+                      foreach($documents[$v->id] as $dk => $dv){
+                        $ext = explode("/",$dv->filename);
+                        $filename = end($ext);
+                        $attached .= "<p><a href='".base_url()."support_documents/".$dv->filename."' download>$filename</a></p>";
+                      }
+                   }
+                   $content .= "<td>$attached<a href='upload_document?ref=".$v->id."'><button class='btn btn-primary fa arrow-up'><span class='fa-arrow-up'></span></button></a></td>";
 
                    $content .= "</tr>";
               }

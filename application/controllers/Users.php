@@ -736,12 +736,14 @@ class Users extends CI_Controller {
  		$data['page'] = 'Budget Requests History';
  		$data['current_page'] = 'budget_history';
  		$response = $this->umodel->get_budget_history($user_id);
+ 		$documents =  $this->umodel->get_documents();
+
  		//echo "<pre>",print_r($response),"</pre>";die();
  		$table_name= 'manage_requests';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
 
- 		$data['content'] = budgetHistoryTable($response,$data['current_page']);
+ 		$data['content'] = budgetHistoryTable($response,$documents,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);

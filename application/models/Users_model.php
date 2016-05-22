@@ -149,7 +149,7 @@ class Users_model extends CI_Model {
         }
         $this->db->order_by('line_item asc');
 
-        $this->db->group_by('tt.project_id, tt.line_item');
+        $this->db->group_by('tt.project_id,tt.sponsor_id,tt.grant_id, tt.line_item');
         $query = $this->db->get();
         $response = $query->result();
 

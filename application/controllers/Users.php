@@ -279,7 +279,7 @@ class Users extends CI_Controller {
  		}
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
- 		$data['content'] = deduct_budget_form($parse['response'],$parse['projects'], $parse['sponsors'] , $parse['project_leader'],$parse['line_item_l'], $parse['line_item'],$f_grants,$data['current_page']);
+ 		$data['content'] = deduct_budget_form($parse['response'],$parse['projects'], $parse['sponsors'] , $parse['project_leader'],$parse['line_item_l'], $parse['line_item'],$f_grants,$user_id,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);
@@ -448,6 +448,11 @@ class Users extends CI_Controller {
  		$user_id = ucwords($this->session->userdata('user_id'));
 //print_r($this->session->userdata());die();
  	// /	echo $user_id;die();
+		$grants = $this->umodel->get('tbl_grants');
+ 		$f_grants = array();
+ 		foreach($grants as $k=>$v){
+ 			$f_grants[$v->sponsor_id][$v->id] = $v->name ;
+ 		}
 
 		$data['logged_in'] = true;
 
@@ -456,12 +461,12 @@ class Users extends CI_Controller {
  		$data['current_page'] = 'request_budget';
  		$response = $this->umodel->get_available_budget($user_id);
         $parse = json_decode($response,true);
-//echo "<pre>",print_r($parse),"</pre>";die();
+// echo "<pre>",print_r($parse),"</pre>";die();
  		$table_name= 'manage';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
  		
- 		$data['content'] = request_budget_form2($parse['response'],$parse['projects'], $parse['sponsors'],$parse['line_item'],$data['current_page']);
+ 		$data['content'] = request_budget_form2($parse['response'],$parse['projects'], $parse['sponsors'],$parse['line_item_l'], $f_grants , $user_id, $data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);
@@ -525,14 +530,14 @@ class Users extends CI_Controller {
 
 				$arr_post = array("project_id" => $v['project_id'] , "project_leader" => $project_leader,
 								 "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],
-								 "cost" => $v['cost_r'],"remarks"=>$v['remarks']);
+								 "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"is_reimbursement"=>$v['is_reimbursement']);
 				// $id = $this->db->insert('tbl_budget_request',$arr_post);
 			 //    redirect('users/request_budget?s=1','refresh');
 
 			}else{
 				$arr_post = array("project_id" => $v['project_id'] , "project_leader" => $project_leader,
 								 "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],
-								 "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"is_granted"=>'3');			
+								 "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"is_granted"=>'3',"is_reimbursement"=>$v['is_reimbursement']);			
 			}
 
 			$id = $this->db->insert('tbl_budget_request',$arr_post);

@@ -456,7 +456,7 @@
   }
 
 
-  function add_budget_form($response = array(), $sponsors = array(), $grants = array() ,$cur_page){
+  function add_budget_form($response = array(), $sponsors = array(), $line_items=array(), $grants = array() ,$cur_page){
     $get = $_GET;
     $display = 'none';
     $message = '';
@@ -539,6 +539,7 @@
       //  $content .= "<input type='text' name='line_item' value='' class='form-control' placeholder='Food Allowance, Transportation , etc.' required>";
         $content .= "<select name='line_item' class='form-control' required>";
         $content .= "<option value=''></option>";
+    //    echo "<pre>",print_r($line_items),"</pre>";die();
         foreach($line_items as $lk=>$lv){
                // echo "<pre>",print_r($lv),"</pre>";die();
           $content .= "<option value='".$lv->line_item."' >".$lv->line_item."</option>";
@@ -625,7 +626,7 @@
         return $content;
   }
 
-    function request_budget_form2($response,$projects, $sponsors, $line_item,$cur_page){
+    function request_budget_form2($response,$projects, $sponsors, $line_item, $grant_list= array(), $user_id = '', $cur_page){
     $get = $_GET;
     $display = 'none';
     $message = '';
@@ -660,9 +661,11 @@
                       <tr>
                         <th width='15%'>Project Name</th>
                         <th width='15%'>Project Sponsor</th>
-                        <th width='15%'>Line Item</th>
-                        <th width='10%'>Available Budget</th>
-                        <th width='10%' >Request Budget</th>
+                        <th width='12%'>Grant Names</th>
+                        <th width='10%'>Line Item</th>
+                        <th width='8%'>Available Budget</th>
+                        <th width='8%' >Request Budget</th>
+                        <th width='4%'>Reimbursement?</th>
                         <th width='15%'>Remarks</th>
                         <th width='10%'></th>
 
@@ -691,7 +694,14 @@
         $content .= "</td>";
                
 
+        $content .= "<td>";
+        $content .= "<input name='grant_list' class='form-control' type='hidden' value='".json_encode($grant_list)."'>";
+        $content .= "<select name='b_grant_id' class='form-control' required>";
+        $content .= "<option value=''></option>";
 
+        $content .= "</select>";
+
+        $content .= "</td>";
 
         $content .= "<td>";
          $content .= "<input name='list_line_item' class='form-control' type='hidden' value='".json_encode($line_item)."'>";
@@ -708,6 +718,9 @@
         $content .= "<td>";
           $content .= "<input type='number' step='any' name='cost' value='' class='form-control' required>";
         $content .= "</td>";
+           $content .= "<td>";
+          $content .= "<input type='checkbox' step='any' name='is_reimburse' value='1' >";
+        $content .= "</td>";
        
         $content .= "<td>";
           $content .= "<form name='requests[]' >";
@@ -715,6 +728,10 @@
           $content .= "<input name='project_sponsor' value='' type='hidden'>";
           $content .= "<input name='line_item' value='' type='hidden'>";
           $content .= "<input name='cost_r' value='' type='hidden'>";
+          $content .= "<input name='grant_id' value='' type='hidden'>";
+          $content .= "<input name='is_reimbursement' value='' type='hidden'>";
+
+
           $content .= "<textarea step='any' name='remarks' value='' class='form-control' ></textarea>";
           $content .= "</form>";
         $content .= "</td>";
@@ -730,6 +747,7 @@
 
         $content .= "</table>";
         $content .= "<div class='form-group'>";
+        $content .= "<input type='hidden' name='user_id' value='".$user_id."'>";
         $content .= "<input type='submit' class='btn btn-primary' name='request_budget_submit' value='Submit'>";
         $content .= "</div>";
         $content .= "</div>";
@@ -751,6 +769,9 @@
         }else if(isset($s) && $s == '2'){
           $display = 'block';
           $message = 'Successfully rejected.';
+        }else if(isset($s) && $s == '3'){
+          $display = 'block';
+          $message = 'Successfully requested for more info.';
         }else{
           $display = 'none';
           $message = '';
@@ -788,6 +809,10 @@
       $content .= "<tbody>";
 
               foreach($response as $k=>$v){
+
+                  if($v->is_reimbursement == '1'){
+                    $v->remarks = 'Reimbursement - '.$v->remarks;
+                  }
                    $attached = '';
                    $content .= "<tr>";
                    $content .= "<td>".$v->project_name."</td>";
@@ -891,6 +916,9 @@
         }else if(isset($s) && $s == '2'){
           $display = 'block';
           $message = 'Successfully rejected.';
+        }else if(isset($s) && $s == '3'){
+          $display = 'block';
+          $message = 'Successfully requested for more info.';
         }else{
           $display = 'none';
           $message = '';
@@ -934,7 +962,7 @@
                    }elseif($v->is_granted == '3'){
                      $content .= "<td>Insufficient funds</td>";
                    }elseif($v->is_granted == '4'){
-                     $content .= "<td>Requesting for more info</td>";
+                     $content .= "<td>Requesting for more info. Email at ".EMAIL_INFO."</td>";
                    }else{
                      $content .= "<td>Rejected</td>";
                    }
@@ -1170,7 +1198,7 @@
       return $content;
   }
 
-  function deduct_budget_form($response,$projects, $sponsors, $project_leader, $line_item_l, $line_item, $grant_list,$cur_page){
+  function deduct_budget_form($response,$projects, $sponsors, $project_leader, $line_item_l, $line_item, $grant_list, $user_id ,$cur_page){
     $get = $_GET;
     $display = 'none';
     $message = '';
@@ -1233,6 +1261,7 @@
         $content .= "<label for='sponsor grant' class='control-label'>Grant Names: </label>";
         $content .= "<input name='grant_list' class='form-control' type='hidden' value='".json_encode($grant_list)."'>";
         $content .= "<select name='b_grant_id' class='form-control' required>";
+        $content .= "<option value=''></option>";
 
         $content .= "</select></div>";
 
@@ -1280,6 +1309,8 @@
 
 
         $content .= "<div class='form-group'>";
+        $content .= "<input type='hidden' name='user_id' value='".$user_id."' class='form-control'>";
+
         $content .= "<input type='submit' class='btn btn-primary' name='deduct_budget_submit' value='Submit'>";
         $content .= "</div>";
         $content .= "</div>";

@@ -526,7 +526,7 @@ class Users extends CI_Controller {
 
 			$credit = (empty($credit_check[0]->credit)) ? 0 : $credit_check[0]->credit;
 
-			if(($debit - $credit) >= $cost){
+			if(($debit - $credit) >= $v['cost_r']){
 
 				$arr_post = array("project_id" => $v['project_id'] , "project_leader" => $project_leader,
 								 "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],

@@ -50,26 +50,29 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |		my-controller/my-method	-> my_controller/my_method
 */
 $route['default_controller'] = 'users';
-$route['login'] = 'users/login';
-$route['logout'] = 'users/logout';
-$route['login/(:any)'] = 'users/$1';
-$route['users/(:any)'] = 'users/$1';
-$route['dashboard'] = 'users/dashboard';
-$route['manage/add'] = 'users/add_record';
-$route['manage/update'] = 'users/update_record';
-$route['manage/announcements'] = 'users/manage_announcements';
-$route['manage/grants'] = 'users/grants';
+ $route['signup'] = 'users/signup_form';
+ $route['signup_db'] = 'users/signup_db';
+
+// $route['login'] = 'users/login';
+// $route['logout'] = 'users/logout';
+// $route['login/(:any)'] = 'users/$1';
+// $route['users/(:any)'] = 'users/$1';
+// $route['dashboard'] = 'users/dashboard';
+// $route['manage/add'] = 'users/add_record';
+// $route['manage/update'] = 'users/update_record';
+// $route['manage/announcements'] = 'users/manage_announcements';
+// $route['manage/grants'] = 'users/grants';
 
 
 
-$route['manage/proj_manage_add'] = 'users/proj_manage_add';
-$route['manage/proj_manage_update'] = 'users/proj_manage_update';
-$route['manage/line_items'] = 'users/manage_line_items';
-$route['add_budget'] = 'users/add_budget';
-$route['add_budget_db'] = 'users/add_budget_db';
-$route['deduct_budget'] = 'users/deduct_budget';
-$route['deduct_budget_db'] = 'users/deduct_budget_db';
-$route['settings'] = 'users/settings';
+// $route['manage/proj_manage_add'] = 'users/proj_manage_add';
+// $route['manage/proj_manage_update'] = 'users/proj_manage_update';
+// $route['manage/line_items'] = 'users/manage_line_items';
+// $route['add_budget'] = 'users/add_budget';
+// $route['add_budget_db'] = 'users/add_budget_db';
+// $route['deduct_budget'] = 'users/deduct_budget';
+// $route['deduct_budget_db'] = 'users/deduct_budget_db';
+// $route['settings'] = 'users/settings';
 
 
 $route['404_override'] = '';

@@ -48,7 +48,15 @@ input[readonly]{
 
 
 .login-page, .register-page{
-    background: #43cea2!important; /* fallback for old browsers */
-    background: -webkit-linear-gradient(to left, #43cea2 , #185a9d)!important; /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to left, #43cea2 , #185a9d)!important; /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: #5C258D; /* fallback for old browsers */
+    background: -webkit-linear-gradient(to left, #5C258D , #4389A2); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to left, #5C258D , #4389A2); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+
+.login-logo{
+    color: #436385;
+    background: #D6DDE6;
+/*        border: 2px solid #614385;
+*/    padding: 4px;
+    font-family: initial;
 }

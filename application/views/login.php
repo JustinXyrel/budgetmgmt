@@ -1,8 +1,8 @@
     <body class="hold-transition login-page">
     <div class="login-box" >
       <div class="login-logo">
-        <b>Budget System</b>
-      </div><!-- /.login-logo -->
+<!--         <b>Budget System</b>
+ -->      </div><!-- /.login-logo -->
 
       <!-- Content Wrapper. Contains page content -->
       <div class="login-box-body">

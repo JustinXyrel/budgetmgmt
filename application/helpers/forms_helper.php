@@ -840,7 +840,7 @@
                    }elseif($v->is_granted == '3'){
                      $content .= "<td>Insufficient funds</td>";
                    }elseif($v->is_granted == '4'){
-                     $content .= "<td>Waiting for more info</td>";
+                     $content .= "<td>Waiting for more info<br><button class='btn btn-block btn-info' ref=".$v->id." id='budget_approve'>Approved</button><button class='btn btn-block btn-danger' ref=".$v->id." id='budget_reject'>Reject</button></td>";
                    }else{
                      $content .= "<td>Rejected</td>";
                    }

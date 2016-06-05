@@ -542,7 +542,7 @@
     //    echo "<pre>",print_r($line_items),"</pre>";die();
         foreach($line_items as $lk=>$lv){
                // echo "<pre>",print_r($lv),"</pre>";die();
-          $content .= "<option value='".$lv->line_item."' >".$lv->line_item."</option>";
+          $content .= "<option value='".$lv->id."' >".$lv->line_item."</option>";
         }
         $content .= "</select>";
         $content .= "</div>";
@@ -797,6 +797,7 @@
                       <tr>
                         <th>Project Name</th>
                         <th>Sponsor</th>
+                        <th>Grant Name</th>
                         <th>Project Leader</th>
                         <th>Line Item</th>
                         <th>Request</th>
@@ -817,8 +818,9 @@
                    $content .= "<tr>";
                    $content .= "<td>".$v->project_name."</td>";
                    $content .= "<td>".$v->sponsor_name."</td>";
+                   $content .= "<td>".$v->grant_name."</td>";
                    $content .= "<td>".$v->name."</td>";
-                   $content .= "<td>".$v->line_item."</td>";
+                   $content .= "<td>".$v->line_desc."</td>";
                    $content .= "<td width='8%'>".$v->cost."</td>";
                    $content .= "<td>".$v->remarks."</td>";
                    $content .= "<td>".$v->create_date."</td>";
@@ -1176,7 +1178,7 @@
                    $content .= "<tr>";
                    $content .= "<td>".$v->project_name."</td>";
                    $content .= "<td>".$v->sponsor_name."</td>";
-                   $content .= "<td>".$v->line_item."</td>";
+                   $content .= "<td>".$v->line_desc."</td>";
                    $content .= "<td width='8%'>".$v->cost."</td>";
                    $content .= "<td>".$v->type."</td>";
                    $content .= "<td>".$v->remarks."</td>";
@@ -1402,7 +1404,7 @@
                    $content .= "<td>".$v->sponsor_name."</td>";
                    $content .= "<td>".$v->project_leader_name."</td>";
                    $content .= "<td>".$v->grant_name."</td>";
-                   $content .= "<td>".$v->line_item."</td>";
+                   $content .= "<td>".$v->line_desc."</td>";
                    $content .= "<td width='8%'>".$v->cost."</td>";
                    $content .= "<td>".$v->type."</td>";
                    $content .= "<td>".$v->remarks."</td>";
@@ -1423,5 +1425,275 @@
       $content .= "</div>";
       return $content;
   }
+
+
+
+  function reportsPage($data = array(),$cur_page){
+    $get = $_GET;
+    $display = 'none';
+    $message = '';
+    if(isset($get) && !empty($get)){
+      extract($get);
+      if(isset($s) && $s == '1'){
+        $display = 'block';
+        $message = 'Successfully added.';
+      }else if(isset($s) && $s == '2'){
+        $display = 'block';
+        $message = 'Successfully updated.';
+      }else if(isset($s) && $s == '3'){
+        $display = 'block';
+        $message = 'Successfully removed.';
+      }else{
+        $display = 'none';
+        $message = '';
+      }
+    }
+    $content = "<div class='row'>";
+    $content .= "<div class='col-md-6'>";
+
+    $content .= "<div class='box box-info'>";
+    $content .= "<div class='box-header with-border'>
+                  <h3 class='box-title'>Extract Report</h3>
+                </div>";
+    $content .= "<div class='success' style='display:$display'>$message</div>";
+
+    $content .= "<form name='report_query' method='POST'  action='reports_db' ";
+    $content .= "<div class='box-body'>";
+
+        $content .= "<div class='form-group'>";
+        $content .= "<label for='project name' class='control-label'>Extract: </label>";
+        $content .= "<select name='extract_cat' class='form-control' required>";
+        $content .= "<option value=''></option>";
+        $content .= "<option value='Project'>Project</option>";
+        $content .= "<option value='Sponsors and Grants'>Sponsors and Grants</option>";
+        $content .= "<option value='Transaction'>Transaction</option>";
+        $content .= "<option value='Line Items'>Line Items</option>";
+        $content .= "</select>";
+        $content .= "</div>";
+
+        $content .= "<div class='form-group hidden'>";
+        $content .= "<label for='team_lead' class='control-label'>Team Leader:</label>";
+        $content .= "<input type='text' step='any' name='team_lead' value='' class='form-control'>";
+         $content .= "</div>";
+
+        $content .= "<div class='form-group hidden'>";
+        $content .= "<label for='from' class='control-label'>From: </label>";
+        $content .= "<input type='text' step='any' name='from' value='' class='form-control' placeholder='05/06/2012'> (eg. mm/dd/yyyy)";
+        $content .= "</div>";
+
+        $content .= "<div class='form-group hidden'>";
+        $content .= "<label for='to' class='control-label'>To: </label>";
+        $content .= "<input type='text' step='any' name='to' value='' class='form-control' placeholder='05/06/2012'> (eg. mm/dd/yyyy)";
+        $content .= "</div>";
+
+
+        $content .= "<div class='form-group'>";
+        $content .= "<input type='submit' class='btn btn-primary' name='submit' value='Submit'>";
+        $content .= "</div>";
+    $content .= "</div>";
+    $content .= "</form>";
+ $content .= "</div>";
+    $content .= "</div>";
+    return $content;
+
+  }
+
+
+  //Reports -- Project Page
+   function ProjectsReport($response,$cur_page){
+      $get = $_GET;
+      $display = 'none';
+      $message = '';
+      if(isset($get) && !empty($get)){
+        extract($get);
+        if(isset($s) && $s == '1'){
+          $display = 'block';
+          $message = 'Successfully approved.';
+        }else if(isset($s) && $s == '2'){
+          $display = 'block';
+          $message = 'Successfully rejected.';
+        }else{
+          $display = 'none';
+          $message = '';
+        }
+      }
+    
+      $content .= "
+
+      <style>
+      
+
+/*** Table Styles **/
+
+.table-fill {
+  background: white;
+  border-radius:3px;
+  border-collapse: collapse;
+  height: 320px;
+  margin: auto;
+  max-width: 600px;
+  padding:5px;
+  width: 100%;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  animation: float 5s infinite;
+}
+ 
+th {
+  color:#D5DDE5;;
+  background:#1b1e24;
+  border-bottom:4px solid #9ea7af;
+  border-right: 1px solid #343a45;
+  font-size:16px;
+  font-weight: 100;
+  padding:10px;
+  text-align:left;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  vertical-align:middle;
+}
+
+th:first-child {
+  border-top-left-radius:3px;
+}
+ 
+th:last-child {
+  border-top-right-radius:3px;
+  border-right:none;
+}
+  
+tr {
+  border-top: 1px solid #C1C3D1;
+  border-bottom-: 1px solid #C1C3D1;
+  color:#666B85;
+  font-size:16px;
+  font-weight:normal;
+  text-shadow: 0 1px 1px rgba(256, 256, 256, 0.1);
+}
+ 
+tr:hover td {
+  background:#4E5066;
+  color:#FFFFFF;
+  border-top: 1px solid #22262e;
+  border-bottom: 1px solid #22262e;
+}
+ 
+tr:first-child {
+  border-top:none;
+}
+
+tr:last-child {
+  border-bottom:none;
+}
+ 
+tr:nth-child(odd) td {
+  background:#EBEBEB;
+}
+ 
+tr:nth-child(odd):hover td {
+  background:#4E5066;
+}
+
+tr:last-child td:first-child {
+  border-bottom-left-radius:3px;
+}
+ 
+tr:last-child td:last-child {
+  border-bottom-right-radius:3px;
+}
+ 
+td {
+  background:#FFFFFF;
+  padding:10px;
+  text-align:left;
+  vertical-align:middle;
+  font-weight:300;
+  font-size:12px;
+  border-right: 1px solid #C1C3D1;
+}
+
+td:last-child {
+  border-right: 0px;
+}
+
+th.text-left {
+  text-align: left;
+}
+
+th.text-center {
+  text-align: center;
+}
+
+th.text-right {
+  text-align: right;
+}
+
+td.text-left {
+  text-align: left;
+}
+
+td.text-center {
+  text-align: center;
+}
+
+td.text-right {
+  text-align: right;
+}
+
+h2{
+  color: white;
+  background: #3e94ec;
+  text-align:center;
+  padding:4px;
+}
+
+      </style>";
+      $content .= "<h2>Projects Report</h2>";
+      $content .= "<table id='budget_requests'  name='budget_requests' class='table-fill'>";
+      $content .= "<thead>
+                      <tr>
+                        <th>Project Name</th>
+                        <th>Leaders</th>
+                        <th>Members</th>
+                        <th>Project Started</th>
+                      </tr>
+                   </thead>";
+      $content .= "<tbody>";
+
+              foreach($response as $k=>$v){
+                $leader = $member = array();
+                   $content .= "<tr>";
+                   $content .= "<td>".$v['project_name']."</td>";
+                   foreach($v['users'] as $u){
+                     if($u['user_role'] == 'Project Leader'){
+                        $leader[] = $u['name'];
+                     }else{
+                      $member[] = $u['name'];
+                     }
+                   }
+
+                   $leader_list = (!empty($leader)) ? implode(', ', $leader) : 'N/A' ;
+                   $member_list = (!empty($member))  ? implode(', ', $member) : 'N/A';
+                   $content .= "<td>". $leader_list ."</td>";
+                   $content .= "<td>". $member_list ."</td>";
+            
+                   $content .= "<td>".$v['create_date']."</td>";
+                   $content .= "</tr>";
+              }
+
+      $content .= "<tbody>";
+      $content .= "</table>";
+
+      $path = '../mpdf/mpdf.php';
+
+      require_once $path;
+
+
+      $mpdf = new mPDF('c');
+      $mpdf->WriteHTML($content);
+      $mpdf->Output('mpdf.pdf','I');      
+      exit;
+            echo $mpdf;die();
+      return $content;
+  }
+
 
 ?>

@@ -529,13 +529,13 @@ class Users extends CI_Controller {
 
 				$arr_post = array("project_id" => $v['project_id'] , "project_leader" => $project_leader,
 								 "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],
-								 "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"is_reimbursement"=>$v['is_reimbursement']);
+								 "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"grant_id"=>$v['grant_id'],"is_reimbursement"=>$v['is_reimbursement']);
 				// $id = $this->db->insert('tbl_budget_request',$arr_post);
 			 //    redirect('users/request_budget?s=1','refresh');
 
 			}else{
 				$arr_post = array("project_id" => $v['project_id'] , "project_leader" => $project_leader,
-								 "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],
+								 "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],"grant_id"=>$v['grant_id'],
 								 "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"is_granted"=>'3',"is_reimbursement"=>$v['is_reimbursement']);			
 			}
 
@@ -559,7 +559,8 @@ class Users extends CI_Controller {
 		if(($debit - $credit) >= $cost){
 
 			$arr_post = array("project_id" => $b_project_id , "project_leader" => $b_project_leader,
-							 "sponsor_id"=> $b_project_sponsors,"line_item"=> $b_line_item,
+							 "sponsor_id"=> $b_project_sponsors,"line_item"=> $b_line_item, 
+							 "grant_id" => $b_grant_id,
 							 "cost" => $cost, "type" => "Credit","remarks"=>$remarks);
 			$id = $this->db->insert('tbl_trans',$arr_post);
 		    redirect('users/deduct_budget?s=1','refresh');
@@ -606,6 +607,7 @@ class Users extends CI_Controller {
 						 'Line Budget'  => array( "Add Budget" => array("icon"=> "fa fa-plus" , "url" => "add_budget"),
 						 						  "Reduce Budget" => array ("icon" => "fa fa-minus", "url"=> "deduct_budget"),),
 						 'Transaction Logs'  => array("icon"=> "fa fa-money" , "url" => "users/all_trans_logs"),
+						 'Reports'  => array("icon"=> "fa fa-book" , "url" => "users/reports"),
 						 'Account Settings'  => array("icon"=> "fa fa-gear" , "url" => "users/settings"));
 		}else if($role == '2'){
 			$nav = array('Dashboard' => array("icon"=> "fa fa-tachometer" , "url" => "dashboard") ,
@@ -1060,6 +1062,63 @@ class Users extends CI_Controller {
 		unlink("support_documents/".$path);
 
 		echo true;
+
+	}
+
+	public function reports(){
+		if(!$this->check_token()){
+			//header('Location: login');//die();
+			redirect('login','refresh');
+		}
+
+		$data['logged_in'] = true;
+ 		$data['user'] = ucwords($this->session->userdata('name'));
+ 		$user_id = ucwords($this->session->userdata('user_id'));
+
+ 		$data['page'] = 'Reports';
+ 		$data['current_page'] = 'reports';
+ 		//echo "<pre>",print_r($response),"</pre>";die();
+ 		$table_name= 'manage_requests';
+ 		$nav = $this->side_nav();
+ 		$data['nav'] = $nav;
+
+ 		$data['content'] = ReportsPage($data,$data['current_page']);
+		$this->load->view('header');
+		$this->load->view('sidenav', $data);
+		$this->load->view('body', $data);
+		$this->load->view('footer');
+	
+
+	}
+
+	public function reports_db(){
+		if(!$this->check_token()){
+			//header('Location: login');//die();
+			redirect('login','refresh');
+		}
+		extract($_POST);
+		$data['logged_in'] = true;
+ 		$data['user'] = ucwords($this->session->userdata('name'));
+ 		$user_id = ucwords($this->session->userdata('user_id'));
+
+ 		if($extract_cat == 'Project'){
+ 			$response = $this->umodel->get_project_structure();
+ 		}
+
+
+ 		$data['page'] = 'Reports';
+ 		$data['current_page'] = 'reports';
+ 		// echo "<pre>",print_r($response	),"</pre>";die();
+ 		// $table_name= 'manage_requests';
+ 		$nav = $this->side_nav();
+ 		$data['nav'] = $nav;
+
+ 		$data['content'] = ProjectsReport($response,$data['current_page']);
+		$this->load->view('header');
+		$this->load->view('sidenav', $data);
+		$this->load->view('body', $data);
+		$this->load->view('footer');
+	
 
 	}
 }

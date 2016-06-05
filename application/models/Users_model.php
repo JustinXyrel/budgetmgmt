@@ -137,12 +137,13 @@ class Users_model extends CI_Model {
 	}
 
 	public function get_available_budget($user_id){
-  		$this->db->select("tt.*,ts.name as sponsor_name,tp.name as project_name, u.name as leader_name ,SUM(COALESCE(CASE WHEN type = 'Debit' THEN tt.cost END,0)) total_debits, SUM(COALESCE(CASE WHEN type = 'Credit' THEN tt.cost END,0)) total_credits ,  SUM(COALESCE(CASE WHEN type = 'Debit' THEN tt.cost END,0)) 
+  		$this->db->select("tt.*,ts.name as sponsor_name,tp.name as project_name, u.name as leader_name , l.line_item as line_desc ,SUM(COALESCE(CASE WHEN type = 'Debit' THEN tt.cost END,0)) total_debits, SUM(COALESCE(CASE WHEN type = 'Credit' THEN tt.cost END,0)) total_credits ,  SUM(COALESCE(CASE WHEN type = 'Debit' THEN tt.cost END,0)) 
      - SUM(COALESCE(CASE WHEN type = 'Credit' THEN tt.cost END,0)) balance");
         $this->db->from('tbl_trans as tt');
         $this->db->join('tbl_sponsors as ts', 'tt.sponsor_id = ts.id ','LEFT');
         $this->db->join('tbl_projects as tp', 'tt.project_id = tp.id','LEFT');
         $this->db->join('tbl_users as u', 'tt.project_leader = u.id','LEFT');
+        $this->db->join('tbl_line_items as l', 'tt.line_item = l.id','LEFT');
 
         if($user_id != 0 ){
          $this->db->where('tt.project_leader=',$user_id);
@@ -168,8 +169,8 @@ class Users_model extends CI_Model {
         		$projects[$v->project_id] = $v->project_name;    
         		$sponsors[$v->project_id][$v->sponsor_id] = $v->sponsor_name;   
                 $project_leader[$v->project_id][$v->sponsor_id][$v->project_leader] = $v->leader_name;   
-        		$line_item[$v->project_id][$v->sponsor_id][$v->line_item] = $v->balance;  
-                $line_item_l[$v->project_id][$v->sponsor_id][$v->grant_id][$v->project_leader][$v->line_item] = $v->balance;  
+        		$line_item[$v->project_id][$v->sponsor_id][$v->line_item.':'.$v->line_desc] = $v->balance;  
+                $line_item_l[$v->project_id][$v->sponsor_id][$v->grant_id][$v->project_leader][$v->line_item.':'.$v->line_desc] = $v->balance;  
 
                 $avail_budget[] = $v; 
 
@@ -181,11 +182,13 @@ class Users_model extends CI_Model {
 	}
 
 	public function get_budget_requests($id=null){
-  		$this->db->select("tbr.*,ts.name as sponsor_name,tp.name as project_name ,tu.name");
+  		$this->db->select("tbr.*,ts.name as sponsor_name,tp.name as project_name ,tu.name,l.line_item as line_desc, g.name as grant_name");
         $this->db->from('tbl_budget_request as tbr');
         $this->db->join('tbl_sponsors as ts', 'tbr.sponsor_id = ts.id ','LEFT');
         $this->db->join('tbl_projects as tp', 'tbr.project_id = tp.id','LEFT');
 		$this->db->join('tbl_users as tu', 'tbr.project_leader = tu.id','LEFT');
+        $this->db->join('tbl_line_items as l', 'tbr.line_item = l.id','LEFT');
+        $this->db->join('tbl_grants as g', 'tbr.grant_id = g.id','LEFT');
 
 		if(!empty($id)){
 			$this->db->where('tbr.id',$id);	
@@ -216,12 +219,14 @@ class Users_model extends CI_Model {
     }
 
     public function  get_trans_logs($id=null){
-        $this->db->select("tbr.*,tu.name as project_leader_name , tg.name as grant_name,ts.name as sponsor_name,tp.name as project_name ,tu.name");
+        $this->db->select("tbr.*,tu.name as project_leader_name , tg.name as grant_name,ts.name as sponsor_name,tp.name as project_name ,tu.name, l.line_item as line_desc");
         $this->db->from('tbl_trans as tbr');
         $this->db->join('tbl_sponsors as ts', 'tbr.sponsor_id = ts.id ','LEFT');
         $this->db->join('tbl_projects as tp', 'tbr.project_id = tp.id','LEFT');
         $this->db->join('tbl_grants as tg', 'tbr.grant_id = tg.id','LEFT');
         $this->db->join('tbl_users as tu', 'tbr.project_leader = tu.id','LEFT');
+        $this->db->join('tbl_line_items as l', 'tbr.line_item = l.id','LEFT');
+
         if(!empty($id)){
             $this->db->where('tbr.project_leader',$id); 
         }

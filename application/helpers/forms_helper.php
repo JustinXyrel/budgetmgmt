@@ -82,15 +82,6 @@
          $content .= "</tr>";
       }   
 
- 		// foreach($data as $k=>$v){
-   //     		$content .= "<tr ref= ".$v->id .">";
-   //      	$content .= "<td name='name'>".ucwords($v->name)."</td>";
-   //      	$content .= "<td>".ucwords($v->create_date)."</td>";
-   //      	$content .= "<td><button id='edit' class='pads btn btn-block btn-success btn-sm'><span id='edit'><i class='fa fa-edit'></i></span></button><button id='remove'  class='pads btn btn-block btn-success btn-sm'><span><i class='fa fa-times'></i></span></button></td>";
-
-   //      	$content .= "</tr>";
-   //      }   
- 
         $content .= '</tbody>';
         $content .= '<tfoot><tr>';
    	   foreach($fields as $k=>$v){
@@ -1500,152 +1491,9 @@
 
 
   //Reports -- Project Page
-   function ProjectsReport($response,$cur_page){
-      $get = $_GET;
-      $display = 'none';
-      $message = '';
-      if(isset($get) && !empty($get)){
-        extract($get);
-        if(isset($s) && $s == '1'){
-          $display = 'block';
-          $message = 'Successfully approved.';
-        }else if(isset($s) && $s == '2'){
-          $display = 'block';
-          $message = 'Successfully rejected.';
-        }else{
-          $display = 'none';
-          $message = '';
-        }
-      }
-    
-      $content .= "
-
-      <style>
-      
-
-/*** Table Styles **/
-
-.table-fill {
-  background: white;
-  border-radius:3px;
-  border-collapse: collapse;
-  height: 320px;
-  margin: auto;
-  max-width: 600px;
-  padding:5px;
-  width: 100%;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  animation: float 5s infinite;
-}
- 
-th {
-  color:#D5DDE5;;
-  background:#1b1e24;
-  border-bottom:4px solid #9ea7af;
-  border-right: 1px solid #343a45;
-  font-size:16px;
-  font-weight: 100;
-  padding:10px;
-  text-align:left;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-  vertical-align:middle;
-}
-
-th:first-child {
-  border-top-left-radius:3px;
-}
- 
-th:last-child {
-  border-top-right-radius:3px;
-  border-right:none;
-}
-  
-tr {
-  border-top: 1px solid #C1C3D1;
-  border-bottom-: 1px solid #C1C3D1;
-  color:#666B85;
-  font-size:16px;
-  font-weight:normal;
-  text-shadow: 0 1px 1px rgba(256, 256, 256, 0.1);
-}
- 
-tr:hover td {
-  background:#4E5066;
-  color:#FFFFFF;
-  border-top: 1px solid #22262e;
-  border-bottom: 1px solid #22262e;
-}
- 
-tr:first-child {
-  border-top:none;
-}
-
-tr:last-child {
-  border-bottom:none;
-}
- 
-tr:nth-child(odd) td {
-  background:#EBEBEB;
-}
- 
-tr:nth-child(odd):hover td {
-  background:#4E5066;
-}
-
-tr:last-child td:first-child {
-  border-bottom-left-radius:3px;
-}
- 
-tr:last-child td:last-child {
-  border-bottom-right-radius:3px;
-}
- 
-td {
-  background:#FFFFFF;
-  padding:10px;
-  text-align:left;
-  vertical-align:middle;
-  font-weight:300;
-  font-size:12px;
-  border-right: 1px solid #C1C3D1;
-}
-
-td:last-child {
-  border-right: 0px;
-}
-
-th.text-left {
-  text-align: left;
-}
-
-th.text-center {
-  text-align: center;
-}
-
-th.text-right {
-  text-align: right;
-}
-
-td.text-left {
-  text-align: left;
-}
-
-td.text-center {
-  text-align: center;
-}
-
-td.text-right {
-  text-align: right;
-}
-
-h2{
-  color: white;
-  background: #3e94ec;
-  text-align:center;
-  padding:4px;
-}
-
-      </style>";
+   function ProjectsReport($response,$cur_page){    
+      $content = '';
+      $content .= style();
       $content .= "<h2>Projects Report</h2>";
       $content .= "<table id='budget_requests'  name='budget_requests' class='table-fill'>";
       $content .= "<thead>
@@ -1695,5 +1543,213 @@ h2{
       return $content;
   }
 
+    //Reports -- Sponsor Page
+   function SponsorsReport($response,$cur_page){
+      $content = '';
+      $content .= style();
+      $content .= "<h2>Sponsor Report</h2>";
+      $content .= "<table id='budget_requests'  name='budget_requests' class='table-fill'>";
+      $content .= "<thead>
+                      <tr>
+                        <th>Sponsor Name</th>
+                        <th>Grants</th>
+                      
+                      </tr>
+                   </thead>";
+      $content .= "<tbody>";
+// echo "<pre>",print_r($response['grants']),"</pre>";die();
 
+              foreach($response['sponsors'] as $k=>$v){
+                $leader = $member = array();
+                   $content .= "<tr>";
+                   $content .= "<td>".$response['sponsors'][$k]."</td>";
+                   $content .= "<td>". implode(', ',$response['grants'][$k])."</td>";
+                   $content .= "</tr>";
+              }
+
+      $content .= "<tbody>";
+      $content .= "</table>";
+
+      $path = '../mpdf/mpdf.php';
+
+      require_once $path;
+
+
+      $mpdf = new mPDF('c');
+      $mpdf->WriteHTML($content);
+      $mpdf->Output('mpdf.pdf','I');      
+      exit;
+            echo $mpdf;die();
+      return $content;
+  }
+
+      //Reports -- Sponsor Page
+   function LineItemsReport($response,$cur_page){
+      $content = '';
+      $content .= style();
+      $content .= "<h2>Line Items Report</h2>";
+      $content .= "<table id='budget_requests'  name='budget_requests' class='table-fill'>";
+      $content .= "<thead>
+                      <tr>
+                        <th>Line Items</th>
+                      
+                      </tr>
+                   </thead>";
+      $content .= "<tbody>";
+// echo "<pre>",print_r($response),"</pre>";die();
+
+              foreach($response as $k=>$v){
+                $leader = $member = array();
+                   $content .= "<tr>";
+                   $content .= "<td>".$v->line_item."</td>";
+                   $content .= "</tr>";
+              }
+
+      $content .= "<tbody>";
+      $content .= "</table>";
+
+      $path = '../mpdf/mpdf.php';
+
+      require_once $path;
+
+
+      $mpdf = new mPDF('c');
+      $mpdf->WriteHTML($content);
+      $mpdf->Output('mpdf.pdf','I');      
+      exit;
+            echo $mpdf;die();
+      return $content;
+  }
+
+  function style(){
+     $style = "
+
+            <style>
+            
+
+      /*** Table Styles **/
+
+      .table-fill {
+        background: white;
+        border-radius:3px;
+        border-collapse: collapse;
+        height: 320px;
+        margin: auto;
+        max-width: 600px;
+        padding:5px;
+        width: 100%;
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        animation: float 5s infinite;
+      }
+       
+      th {
+        color:#D5DDE5;;
+        background:#1b1e24;
+        border-bottom:4px solid #9ea7af;
+        border-right: 1px solid #343a45;
+        font-size:16px;
+        font-weight: 100;
+        padding:10px;
+        text-align:left;
+        text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        vertical-align:middle;
+      }
+
+      th:first-child {
+        border-top-left-radius:3px;
+      }
+       
+      th:last-child {
+        border-top-right-radius:3px;
+        border-right:none;
+      }
+        
+      tr {
+        border-top: 1px solid #C1C3D1;
+        border-bottom-: 1px solid #C1C3D1;
+        color:#666B85;
+        font-size:16px;
+        font-weight:normal;
+        text-shadow: 0 1px 1px rgba(256, 256, 256, 0.1);
+      }
+       
+      tr:hover td {
+        background:#4E5066;
+        color:#FFFFFF;
+        border-top: 1px solid #22262e;
+        border-bottom: 1px solid #22262e;
+      }
+       
+      tr:first-child {
+        border-top:none;
+      }
+
+      tr:last-child {
+        border-bottom:none;
+      }
+       
+      tr:nth-child(odd) td {
+        background:#EBEBEB;
+      }
+       
+      tr:nth-child(odd):hover td {
+        background:#4E5066;
+      }
+
+      tr:last-child td:first-child {
+        border-bottom-left-radius:3px;
+      }
+       
+      tr:last-child td:last-child {
+        border-bottom-right-radius:3px;
+      }
+       
+      td {
+        background:#FFFFFF;
+        padding:10px;
+        text-align:left;
+        vertical-align:middle;
+        font-weight:300;
+        font-size:12px;
+        border-right: 1px solid #C1C3D1;
+      }
+
+      td:last-child {
+        border-right: 0px;
+      }
+
+      th.text-left {
+        text-align: left;
+      }
+
+      th.text-center {
+        text-align: center;
+      }
+
+      th.text-right {
+        text-align: right;
+      }
+
+      td.text-left {
+        text-align: left;
+      }
+
+      td.text-center {
+        text-align: center;
+      }
+
+      td.text-right {
+        text-align: right;
+      }
+
+      h2{
+        color: white;
+        background: #3e94ec;
+        text-align:center;
+        padding:4px;
+      }
+
+            </style>";
+      return $style;
+  }
 ?>

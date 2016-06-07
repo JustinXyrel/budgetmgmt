@@ -1100,9 +1100,16 @@ class Users extends CI_Controller {
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
  		$user_id = ucwords($this->session->userdata('user_id'));
-
+ 		$page = '';
  		if($extract_cat == 'Project'){
  			$response = $this->umodel->get_project_structure();
+ 			$page = 'ProjectsReport';
+ 		}else if($extract_cat == 'Sponsors and Grants'){
+			$response = $this->umodel->get_sponsors();
+ 			$page = 'SponsorsReport';
+ 		}else if($extract_cat == 'Line Items'){
+			$response = $this->umodel->get('tbl_line_items');
+ 			$page = 'LineItemsReport';
  		}
 
 
@@ -1113,7 +1120,7 @@ class Users extends CI_Controller {
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
 
- 		$data['content'] = ProjectsReport($response,$data['current_page']);
+ 		$data['content'] = $page($response,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);

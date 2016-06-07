@@ -340,6 +340,27 @@ class Users_model extends CI_Model {
 
     }
 
+     public function get_sponsors(){
+        $this->db->select("d.* , d.name as sponsor_name , g.name");
+        $this->db->from('tbl_sponsors as d');
+        $this->db->join('tbl_grants as g', 'd.id = g.sponsor_id','LEFT');
+        $this->db->order_by('g.sponsor_id');
+
+        $query = $this->db->get();
+        $response = $query->result();
+        $grants = $sponsors = array();
+// echo "<pre>",print_r($response),"</pre>";die();
+        foreach($response as $k => $v){
+            $grants[$v->id][] = $v->name;
+            $sponsors[$v->id] = $v->sponsor_name;
+
+        }
+
+        return array('grants'=> $grants, 'sponsors'=>$sponsors) ;
+
+    }
+
+
  
 
 }

@@ -137,24 +137,29 @@ class Users_model extends CI_Model {
 	}
 
 	public function get_available_budget($user_id){
-  		$this->db->select("tt.*,ts.name as sponsor_name,tp.name as project_name, u.name as leader_name , l.line_item as line_desc ,SUM(COALESCE(CASE WHEN type = 'Debit' THEN tt.cost END,0)) total_debits, SUM(COALESCE(CASE WHEN type = 'Credit' THEN tt.cost END,0)) total_credits ,  SUM(COALESCE(CASE WHEN type = 'Debit' THEN tt.cost END,0)) 
+  		$this->db->select("tt.*,ts.name as sponsor_name,tp.name as project_name, u.name as leader_name , l.line_item as line_desc , tg.name as grant_name ,SUM(COALESCE(CASE WHEN tt.type = 'Debit' AND tt.status='1' THEN tt.cost END,0)) total_debits, SUM(COALESCE(CASE WHEN tt.type = 'Credit' AND tt.status='1' THEN tt.cost END,0)) total_credits ,  SUM(COALESCE(CASE WHEN type = 'Debit' THEN tt.cost END,0)) 
      - SUM(COALESCE(CASE WHEN type = 'Credit' THEN tt.cost END,0)) balance");
         $this->db->from('tbl_trans as tt');
         $this->db->join('tbl_sponsors as ts', 'tt.sponsor_id = ts.id ','LEFT');
         $this->db->join('tbl_projects as tp', 'tt.project_id = tp.id','LEFT');
         $this->db->join('tbl_users as u', 'tt.project_leader = u.id','LEFT');
         $this->db->join('tbl_line_items as l', 'tt.line_item = l.id','LEFT');
+        $this->db->join('tbl_manage as tm', 'tt.project_id = tm.project_id','LEFT');
+        $this->db->join('tbl_grants as tg', 'tt.grant_id = tg.id','LEFT');
 
         if($user_id != 0 ){
-         $this->db->where('tt.project_leader=',$user_id);
+         $this->db->where('tm.user_id=',$user_id);
+
         }
+
+        $this->db->where('tt.status=','1');
         $this->db->order_by('line_item asc');
 
         $this->db->group_by('tt.project_id,tt.sponsor_id,tt.grant_id, tt.line_item');
         $query = $this->db->get();
         $response = $query->result();
 
-       //	 echo $this->db->last_query();die();
+       	 // echo $this->db->last_query();die();
         $arr = array();
         $projects = array();
         $sponsors = array();
@@ -170,9 +175,12 @@ class Users_model extends CI_Model {
         		$sponsors[$v->project_id][$v->sponsor_id] = $v->sponsor_name;   
                 $project_leader[$v->project_id][$v->sponsor_id][$v->project_leader] = $v->leader_name;   
         		$line_item[$v->project_id][$v->sponsor_id][$v->line_item.':'.$v->line_desc] = $v->balance;  
-                $line_item_l[$v->project_id][$v->sponsor_id][$v->grant_id][$v->project_leader][$v->line_item.':'.$v->line_desc] = $v->balance;  
+                $line_item_l[$v->project_id][$v->sponsor_id][$v->grant_id][$v->line_item.':'.$v->line_desc] = $v->balance;  
 
-                $avail_budget[] = $v; 
+                $avail_budget[] = $v;
+                // $t_avail_budget[$v->project_id] += isset($t_avail_budget[$v->project_id]) ? $t_avail_budget[$v->project_id] + $v->balance : $v->balance ;
+
+
 
      
         }
@@ -202,11 +210,14 @@ class Users_model extends CI_Model {
 	}
 
     public function get_budget_history($id=null){
-        $this->db->select("tbr.*,ts.name as sponsor_name,tp.name as project_name ,tu.name");
+        $this->db->select("tbr.*,ts.name as sponsor_name,tp.name as project_name ,tu.name,l.line_item as line_desc, g.name as grant_name");
         $this->db->from('tbl_budget_request as tbr');
         $this->db->join('tbl_sponsors as ts', 'tbr.sponsor_id = ts.id ','LEFT');
         $this->db->join('tbl_projects as tp', 'tbr.project_id = tp.id','LEFT');
         $this->db->join('tbl_users as tu', 'tbr.project_leader = tu.id','LEFT');
+        $this->db->join('tbl_line_items as l', 'tbr.line_item = l.id','LEFT');
+        $this->db->join('tbl_grants as g', 'tbr.grant_id = g.id','LEFT');
+
         if(!empty($id)){
             $this->db->where('tbr.project_leader',$id); 
         }
@@ -224,11 +235,13 @@ class Users_model extends CI_Model {
         $this->db->join('tbl_sponsors as ts', 'tbr.sponsor_id = ts.id ','LEFT');
         $this->db->join('tbl_projects as tp', 'tbr.project_id = tp.id','LEFT');
         $this->db->join('tbl_grants as tg', 'tbr.grant_id = tg.id','LEFT');
-        $this->db->join('tbl_users as tu', 'tbr.project_leader = tu.id','LEFT');
         $this->db->join('tbl_line_items as l', 'tbr.line_item = l.id','LEFT');
+        $this->db->join('tbl_manage as tm', 'tbr.project_id = tm.project_id','LEFT');
+        $this->db->join('tbl_users as tu', 'tm.user_id = tu.id','LEFT');
 
         if(!empty($id)){
-            $this->db->where('tbr.project_leader',$id); 
+           // $this->db->where('tbr.project_leader',$id); 
+            $this->db->where('tm.user_id',$id); 
         }
         $this->db->order_by('tbr.trans_date');
         $query = $this->db->get();
@@ -240,6 +253,11 @@ class Users_model extends CI_Model {
     }
 
 	public function update($data, $id , $table){
+   //     print_r($data);die();
+        if(isset($data['password'])){
+            $data['password'] = sha1($data['password']);
+        }
+
 		$tbl = 'tbl_'.$table;
 		$this->db->where('id', $id);
 		$query  = $this->db->update($tbl, $data); 
@@ -250,56 +268,75 @@ class Users_model extends CI_Model {
 		$response = $this->get_budget_requests($id);
 		$data = $response[0];
 		$arr_post = array("project_id" => $data->project_id , "project_leader" => $data->project_leader,
-						 "sponsor_id"=> $data->sponsor_id,"line_item"=> $data->line_item,
+						 "sponsor_id"=> $data->sponsor_id,"line_item"=> $data->line_item, "grant_id"=>$data->grant_id,
 						 "type"=> "Credit",
 						 "cost" => $data->cost);
 		$id = $this->db->insert('tbl_trans',$arr_post);
 	}
 
-	public function get_debit($project_leader,$project_id,$project_sponsor,$line_item){
+	public function get_debit($grant_id,$project_id,$project_sponsor,$line_item){
 		$this->db->select("SUM(cost) as debit");
         $this->db->from('tbl_trans');
         $this->db->where('project_id=',$project_id);
-        $this->db->where('project_leader=',$project_leader);
+        $this->db->where('grant_id=',$grant_id);
         $this->db->where('sponsor_id=',$project_sponsor);
         $this->db->where('line_item=',$line_item);
         $this->db->where('type=','Debit');
+        $this->db->where('status=','1');
 
         $query = $this->db->get();
         $debit = $query->result();
-//echo $this->db->last_query();die();
+// echo $this->db->last_query();die();
      	return $debit;
 
     //     echo "<pre>",print_r($query->result()),"</pre>";die();
 
 	}
 
-	public function get_credit($project_leader,$project_id,$project_sponsor,$line_item){
+	public function get_credit($grant_id,$project_id,$project_sponsor,$line_item){
 		$this->db->select("SUM(cost) as credit");
         $this->db->from('tbl_trans');
         $this->db->where('project_id=',$project_id);
-        $this->db->where('project_leader=',$project_leader);
+        $this->db->where('grant_id=',$grant_id);
         $this->db->where('sponsor_id=',$project_sponsor);
         $this->db->where('line_item=',$line_item);
         $this->db->where('type=','Credit');
+        $this->db->where('status=','1');
+
 
         $query = $this->db->get();
         $credit = $query->result();
+// echo $this->db->last_query();die();
 
      	return $credit;
 
 	}
 
-	public function get_projects(){
-		$id = $this->session->userdata('user_id');
-		$this->db->select("tp.name as project_name, tr.role as role_name");
-        $this->db->from('tbl_manage as tm');
-        $this->db->join('tbl_projects as tp', 'tm.project_id = tp.id ','LEFT');
-        $this->db->join('tbl_roles as tr', 'tm.user_role = tr.id ','LEFT');
-        $this->db->where('tm.user_id=',$id);
+	public function get_projects($user_id = NULL){
+        $optional = "";
+        if(!empty($user_id) && $user_id != 1){
+            $optional = " tr.role as role_name,";
+        }
+		$this->db->select("tp.name as project_name, $optional SUM(COALESCE(CASE WHEN type = 'Debit' THEN tt.cost END,0)) 
+     - SUM(COALESCE(CASE WHEN type = 'Credit' THEN tt.cost END,0)) balance");
+        $this->db->from('tbl_projects as tp');
+        $this->db->join('tbl_trans as tt','tt.project_id = tp.id','LEFT');
+
+        if(!empty($user_id) && $user_id != 1){
+
+            $this->db->join('tbl_manage as tm', ' tp.id  = tm.project_id','LEFT');
+            $this->db->join('tbl_roles as tr', 'tm.user_role = tr.id ','LEFT');
+
+            $this->db->where('tm.user_id=',$user_id);
+        }
+
+
+        $this->db->where('tt.status=',1);
+        $this->db->group_by('tt.project_id');
+
         $query = $this->db->get();
         $response = $query->result();
-       
+      //     echo $this->db->last_query();die();
 		return $response;
 
 	}
@@ -360,6 +397,47 @@ class Users_model extends CI_Model {
 
     }
 
+
+    public function  report_trans_logs($user=null,$date_from=null,$date_to=null,$project_id = null){
+        $this->db->select("tbr.*,tu.name as project_leader_name , tg.name as grant_name,ts.name as sponsor_name,tp.name as project_name ,tu.name, l.line_item as line_desc");
+        $this->db->from('tbl_trans as tbr');
+        $this->db->join('tbl_sponsors as ts', 'tbr.sponsor_id = ts.id ','LEFT');
+        $this->db->join('tbl_projects as tp', 'tbr.project_id = tp.id','LEFT');
+        $this->db->join('tbl_grants as tg', 'tbr.grant_id = tg.id','LEFT');
+        $this->db->join('tbl_users as tu', 'tbr.project_leader = tu.id','LEFT');
+        $this->db->join('tbl_line_items as l', 'tbr.line_item = l.id','LEFT');
+
+        if(!empty($user)){
+            $this->db->like('tu.name',$user); 
+            $this->db->or_where('tu.name is null',null,false); 
+
+        }
+
+        if(!empty($project_id)){
+            $this->db->or_where('tbr.project_id',$project_id); 
+
+        }
+
+        // if(!empty($date_from)){
+        //     $date_from = date('Y-m-d',strtotime($date_from));
+        if(!empty($date_from) || !empty($date_to)){
+            $now = date('Y-m-d');
+            $date_from = (!empty($date_from)) ? $date_from : $now;
+            $date_to = (!empty($date_to)) ? $date_to : $now;
+
+            $this->db->where('tbr.trans_date BETWEEN "'. date('Y-m-d 00:00:00', strtotime($date_from)). '" and "'. date('Y-m-d 23:59:59', strtotime($date_to)).'"');
+        }
+
+         $this->db->where('tbr.status','1'); 
+
+        $this->db->order_by('tbr.trans_date');
+        $query = $this->db->get();
+        $response = $query->result();
+
+      // echo $this->db->last_query();die();    
+        return $response ;
+
+    }
 
  
 

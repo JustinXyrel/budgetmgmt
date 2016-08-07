@@ -2,8 +2,10 @@
 <!-- jQuery 2.2.0 -->
         <script src="<?=base_url();?>js/plugins/jQuery/jQuery-2.2.0.min.js"></script>
         <!-- jQuery UI 1.11.4 -->
-        <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
-        <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+                <script src="<?=base_url();?>js/jquery-ui.min.js"></script>
+
+<!--         <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+ -->        <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
         <script>
           $.widget.bridge('uibutton', $.ui.button);
         </script>
@@ -20,8 +22,10 @@
         <!-- jQuery Knob Chart -->
         <script src="<?=base_url()?>js/plugins/knob/jquery.knob.js"></script>
         <!-- daterangepicker -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
-        <script src="<?=base_url()?>js/plugins/daterangepicker/daterangepicker.js"></script>
+<!--         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script>
+ -->        <script src="<?=base_url()?>js/plugins/daterangepicker/moment.min.js"></script>
+
+ -->        <script src="<?=base_url()?>js/plugins/daterangepicker/daterangepicker.js"></script>
         <!-- datepicker -->
         <script src="<?=base_url()?>js/plugins/datepicker/bootstrap-datepicker.js"></script>
         <!-- Bootstrap WYSIHTML5 -->
@@ -45,13 +49,13 @@
             jQuery(document).ready(function() { 
                 if($("#mainNewsWidget").length > 0){
                         $("#mainNewsWidget").newsWidget({
-                                    currentNewsWidth: 700,
+                                    currentNewsWidth: 550,
                                     currentNewsHeight:280,
                                     numberOfNews :2,   
                                     widgetHeight: 540, 
                                     fullArticleType : "widget" ,
                                     navBtns: "right",
-                                    closedNewsWidth:600,
+                                    closedNewsWidth:500,
                                     closedNewsPosition:"right", 
                                     closedNewsOffset:50, 
                                     maxLetters : 330,

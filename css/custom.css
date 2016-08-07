@@ -15,6 +15,14 @@ h3.announce{
     border-radius: 6px;
 }
 
+h3.navy{
+    background: #39bba4;
+    color: #fff;
+    padding: 4px;
+    text-align: center;
+    border-radius: 6px;
+}
+
 .success{
 	background: #23C37A;
     padding: 3px;

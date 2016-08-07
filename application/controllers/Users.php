@@ -56,9 +56,13 @@ class Users extends CI_Controller {
 
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
+ 		$data['user_id'] = ucwords($this->session->userdata('user_id'));
+
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
- 		$response = $this->umodel->get('tbl_announcements');
+ 		$response['announcements'] = $this->umodel->get('tbl_announcements');
+ 		$response['projects'] = $this->umodel->get_projects($data['user_id']);
+
  		$data['page'] = 'Dashboard';
 		$data['current_page'] = 'dashboard';
  		$data['content'] = createNewsFeed($response,$data['current_page']);
@@ -248,7 +252,7 @@ class Users extends CI_Controller {
  		$data['nav'] = $nav;
  		
 
- 		$data['content'] = add_budget_form($response,$sponsors,$line_items,$f_grants,$data['current_page']);
+ 		$data['content'] = add_budget_form2($response,$sponsors,$line_items,$f_grants,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);
@@ -279,7 +283,7 @@ class Users extends CI_Controller {
  		}
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
- 		$data['content'] = deduct_budget_form($parse['response'],$parse['projects'], $parse['sponsors'] , $parse['project_leader'],$parse['line_item_l'], $parse['line_item'],$f_grants,$user_id,$data['current_page']);
+ 		$data['content'] = deduct_budget_form2($parse['response'],$parse['projects'], $parse['sponsors'] , $parse['project_leader'],$parse['line_item_l'], $parse['line_item'],$f_grants,$user_id,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
 		$this->load->view('body', $data);
@@ -428,15 +432,40 @@ class Users extends CI_Controller {
 
 	}
 
+	// public function add_budget_db(){
+	// 	$post = $this->input->post();	
+	// 	// $batch = array();
+	// 	$post['type'] = 'Debit';
+	// 	unset($post['submit']);
+
+	// 	$id = $this->db->insert('tbl_trans',$post);
+
+	// 	redirect('add_budget?s=1','refresh');
+	// }
+
 	public function add_budget_db(){
 		$post = $this->input->post();	
-		// $batch = array();
-		$post['type'] = 'Debit';
-		unset($post['submit']);
+		extract($post);
+		$project_leader = $this->session->userdata('user_id');
+		$forms = array();
+		foreach($post['data'] as $kf=>$vf){
+			foreach($vf as $k=>$v){
+				$forms[$kf][$v['name']] = $v['value'];
 
-		$id = $this->db->insert('tbl_trans',$post);
+			}
+		}
 
-		redirect('add_budget?s=1','refresh');
+// echo "<pre>",print_r($forms),"</pre>";die();
+		foreach($forms as $k => $v){
+		
+				$arr_post = array("project_id" => $v['project_id'] ,
+								 "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],
+								 "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"grant_id"=>$v['grant_id'],"type"=>"Debit");
+
+			$id = $this->db->insert('tbl_trans',$arr_post);
+		}
+
+		echo true;
 	}
 
 
@@ -517,8 +546,8 @@ class Users extends CI_Controller {
 
 			// echo "<pre>",print_r($forms),"</pre>";die();
 		foreach($forms as $k => $v){
-			$debit_check =  $this->umodel->get_debit($project_leader,$v['project_id'], $v['project_sponsor'], $v['line_item']);
-			$credit_check =  $this->umodel->get_credit($project_leader,$v['project_id'], $v['project_sponsor'], $v['line_item']);
+			$debit_check =  $this->umodel->get_debit($v['grant_id'],$v['project_id'], $v['project_sponsor'], $v['line_item']);
+			$credit_check =  $this->umodel->get_credit($v['grant_id'],$v['project_id'], $v['project_sponsor'], $v['line_item']);
 
 			$debit = $debit_check[0]->debit;
 
@@ -530,8 +559,7 @@ class Users extends CI_Controller {
 				$arr_post = array("project_id" => $v['project_id'] , "project_leader" => $project_leader,
 								 "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],
 								 "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"grant_id"=>$v['grant_id'],"is_reimbursement"=>$v['is_reimbursement']);
-				// $id = $this->db->insert('tbl_budget_request',$arr_post);
-			 //    redirect('users/request_budget?s=1','refresh');
+				
 
 			}else{
 				$arr_post = array("project_id" => $v['project_id'] , "project_leader" => $project_leader,
@@ -548,27 +576,71 @@ class Users extends CI_Controller {
 
 	public function deduct_budget_db(){
 		$post = $this->input->post();	
-		extract($post);
+	extract($post);
+		$project_leader = $this->session->userdata('user_id');
+		$forms = array();
 		// $batch = array();
-		$debit_check =  $this->umodel->get_debit($b_project_leader,$b_project_id, $b_project_sponsors, $b_line_item);
-		$credit_check =  $this->umodel->get_credit($b_project_leader,$b_project_id, $b_project_sponsors, $b_line_item);
+		foreach($post['data'] as $kf=>$vf){
+			foreach($vf as $k=>$v){
+				// echo $k;
 
-		$debit = $debit_check[0]->debit;
-		$credit = (empty($credit_check[0]->credit)) ? 0 : $credit_check[0]->credit;
+				$forms[$kf][$v['name']] = $v['value'];
+			     // echo "<pre>",print_r($v),"</pre>";die();
 
-		if(($debit - $credit) >= $cost){
-
-			$arr_post = array("project_id" => $b_project_id , "project_leader" => $b_project_leader,
-							 "sponsor_id"=> $b_project_sponsors,"line_item"=> $b_line_item, 
-							 "grant_id" => $b_grant_id,
-							 "cost" => $cost, "type" => "Credit","remarks"=>$remarks);
-			$id = $this->db->insert('tbl_trans',$arr_post);
-		    redirect('users/deduct_budget?s=1','refresh');
-
-		}else{
-			echo "Requested budget exceeded available budget.";
+			}
 		}
+
+		foreach($forms as $k => $v){
+			$debit_check =  $this->umodel->get_debit($v['grant_id'],$v['project_id'], $v['project_sponsor'], $v['line_item']);
+			$credit_check =  $this->umodel->get_credit($v['grant_id'],$v['project_id'], $v['project_sponsor'], $v['line_item']);
+
+			$debit = $debit_check[0]->debit;
+
+
+			$credit = (empty($credit_check[0]->credit)) ? 0 : $credit_check[0]->credit;
+// echo $debit." : ".$credit;
+			if(($debit - $credit) >= $v['cost_r']){
+
+				$arr_post = array("project_id" => $v['project_id'] , 
+								 "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],
+								 "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"grant_id"=>$v['grant_id'],'type'=>'Credit');
+				// $id = $this->db->insert('tbl_budget_request',$arr_post);
+			 //    redirect('users/request_budget?s=1','refresh');
+
+			}else{
+				$arr_post = array("project_id" => $v['project_id'] , "sponsor_id"=> $v['project_sponsor'],"line_item"=> $v['line_item'],"grant_id"=>$v['grant_id'], "cost" => $v['cost_r'],"remarks"=>$v['remarks'],"status"=>'2','type'=>'Credit');			
+			}
+			// echo "<pre>",print_r($arr_post),"</pre>";
+
+			$id = $this->db->insert('tbl_trans',$arr_post);
+		}
+
+		echo true;
 	}
+
+	// public function deduct_budget_db(){
+	// 	$post = $this->input->post();	
+	// 	extract($post);
+	// 	// $batch = array();
+	// 	$debit_check =  $this->umodel->get_debit($b_project_leader,$b_project_id, $b_project_sponsors, $b_line_item);
+	// 	$credit_check =  $this->umodel->get_credit($b_project_leader,$b_project_id, $b_project_sponsors, $b_line_item);
+
+	// 	$debit = $debit_check[0]->debit;
+	// 	$credit = (empty($credit_check[0]->credit)) ? 0 : $credit_check[0]->credit;
+
+	// 	if(($debit - $credit) >= $cost){
+
+	// 		$arr_post = array("project_id" => $b_project_id , "project_leader" => $b_project_leader,
+	// 						 "sponsor_id"=> $b_project_sponsors,"line_item"=> $b_line_item, 
+	// 						 "grant_id" => $b_grant_id,
+	// 						 "cost" => $cost, "type" => "Credit","remarks"=>$remarks);
+	// 		$id = $this->db->insert('tbl_trans',$arr_post);
+	// 	    redirect('users/deduct_budget?s=1','refresh');
+
+	// 	}else{
+	// 		echo "Requested budget exceeded available budget.";
+	// 	}
+	// }
 
 
 
@@ -615,6 +687,8 @@ class Users extends CI_Controller {
 						 'Request Funds'  => array("icon"=> "fa fa-mail-forward" , "url" => "users/request_budget"), 
 						 'Requests'  => array( 'History' => array("icon"=> "fa fa-history" , "url" => "users/budget_history" ),
 						 								 	'Available Budget' => array("icon"=> "fa fa-dollar" , "url" => "users/available_budget" )),
+						 'Reports'  => array("icon"=> "fa fa-book" , "url" => "users/reports"),
+
 						 'Transaction Logs'  => array("icon"=> "fa fa-money" , "url" => "users/trans_logs"),
 						  'Account Settings'  => array("icon"=> "fa fa-gear" , "url" => "users/settings")
 
@@ -661,14 +735,14 @@ class Users extends CI_Controller {
  		$details = $this->umodel->get_where('tbl_budget_request',array('id'=>$id));
  		$success = true;
 
- 		$debit_check =  $this->umodel->get_debit($details[0]->project_leader,$details[0]->project_id, $details[0]->sponsor_id, $details[0]->line_item);
-		$credit_check =  $this->umodel->get_credit($details[0]->project_leader,$details[0]->project_id, $details[0]->sponsor_id, $details[0]->line_item);
+ 		$debit_check =  $this->umodel->get_debit($details[0]->grant_id,$details[0]->project_id, $details[0]->sponsor_id, $details[0]->line_item);
+		$credit_check =  $this->umodel->get_credit($details[0]->grant_id,$details[0]->project_id, $details[0]->sponsor_id, $details[0]->line_item);
 
 		$debit = $debit_check[0]->debit;
 
 
 		$credit = (empty($credit_check[0]->credit)) ? 0 : $credit_check[0]->credit;
-
+// echo $debit - $credit . " : ". $details[0]->cost;die();
 		if(($debit - $credit) < $details[0]->cost){
 			$is_granted = '3';
 		}
@@ -702,11 +776,14 @@ class Users extends CI_Controller {
 
 		$data['logged_in'] = true;
 		$data['user'] = ucwords($this->session->userdata('name'));
- 		$data['page'] = 'Manage Requests';
+		$data['user_id'] = ucwords($this->session->userdata('user_id'));
+ 		$data['page'] = 'Projects';
  		$data['current_page'] = 'manage_requests';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
- 		$projects = $this->umodel->get_projects();
+ 		$projects = $this->umodel->get_projects($data['user_id']);
+ 		      //  echo "<pre>",print_r($projects),"</pre>";die();
+
  		$data['content'] = manageProjectsTable($projects,$data['current_page']);
  		$this->load->view('header');
 		$this->load->view('sidenav', $data);
@@ -1074,14 +1151,20 @@ class Users extends CI_Controller {
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
  		$user_id = ucwords($this->session->userdata('user_id'));
+ 		$user_role = $this->session->userdata('user_role');
+ 		$projects =  $this->umodel->get('tbl_projects');
+
+
 
  		$data['page'] = 'Reports';
  		$data['current_page'] = 'reports';
- 		//echo "<pre>",print_r($response),"</pre>";die();
+ 		$data['user_role'] = $user_role;
+ 		$data['projects'] = $projects;
  		$table_name= 'manage_requests';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
 
+ 	//	echo "<pre>",print_r($data),"</pre>";die();
  		$data['content'] = ReportsPage($data,$data['current_page']);
 		$this->load->view('header');
 		$this->load->view('sidenav', $data);
@@ -1097,9 +1180,16 @@ class Users extends CI_Controller {
 			redirect('login','refresh');
 		}
 		extract($_POST);
+		if(!isset($extract_cat)){
+			redirect('users/reports','refresh');
+
+		}
+
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
  		$user_id = ucwords($this->session->userdata('user_id'));
+ 		$user_role = ucwords($this->session->userdata('user_role'));
+
  		$page = '';
  		if($extract_cat == 'Project'){
  			$response = $this->umodel->get_project_structure();
@@ -1110,6 +1200,15 @@ class Users extends CI_Controller {
  		}else if($extract_cat == 'Line Items'){
 			$response = $this->umodel->get('tbl_line_items');
  			$page = 'LineItemsReport';
+ 		}else{
+ 			// echo "<pre>",print_r($_POST),"</pre>";die();
+ 			if($user_role == '2'){
+ 				$team_lead = $user_id;
+ 			}
+
+ 		   $response = $this->umodel->report_trans_logs($team_lead,$from,$to,$project_name);
+ 			$page = 'TransReport';
+
  		}
 
 

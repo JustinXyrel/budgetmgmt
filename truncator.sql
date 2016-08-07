@@ -6,4 +6,5 @@ TRUNCATE tbl_projects;
 TRUNCATE tbl_sponsors;
 TRUNCATE tbl_trans;
 TRUNCATE tbl_documents;
+TRUNCATE tbl_announcements;
 DELETE from tbl_users where id !=1;

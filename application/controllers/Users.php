@@ -81,13 +81,17 @@ class Users extends CI_Controller {
 			redirect('login','refresh');
 		}
 
+
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
  		$data['page'] = 'Projects';
  		$data['current_page'] = 'manage_projects';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
- 		$fields = array('name'=>array('type'=>'text','placeholder'=>'Name','label' => 'Project Name'),
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'manage_users');
+ 	 	$fields = array('name'=>array('type'=>'text','placeholder'=>'Name','label' => 'Project Name'),
  						'create_date'=>array('type'=>'text','placeholder'=>'Create Date','label' => 'Create Date'),
  						'id'=>array('type'=>'hidden','placeholder'=>'id','label' => ''));
  		$table_name= 'projects';
@@ -114,6 +118,9 @@ class Users extends CI_Controller {
  		$data['user'] = ucwords($this->session->userdata('name'));
  		$data['page'] = 'Users';
  		$data['current_page'] = 'manage_users';
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'manage_users');
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
  		$fields = array('name'=>array('type'=>'text','placeholder'=>'Name','label' => 'Name'),
@@ -146,6 +153,9 @@ class Users extends CI_Controller {
  		$data['current_page'] = 'manage_sponsors';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'manage_users');
  		$fields = array('name'=>array('type'=>'text','placeholder'=>'Name','label' => 'Sponsor Name'),
  						'create_date'=>array('type'=>'text','placeholder'=>'Create Date','label' => 'Create Date'),
  						'id'=>array('type'=>'hidden','placeholder'=>'id','label' => ''));
@@ -174,6 +184,10 @@ class Users extends CI_Controller {
  		$data['current_page'] = 'manage_announcements';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'manage_users');
+
  		$fields = array('title'=>array('type'=>'text','placeholder'=>'Title','label' => 'Title'),
  						'description'=>array('type'=>'textarea','placeholder'=>'Description','label' => 'Description'),
  						'create_date'=>array('type'=>'text','placeholder'=>'Create Date','label' => 'Create Date'),
@@ -201,6 +215,10 @@ class Users extends CI_Controller {
  		$data['user'] = ucwords($this->session->userdata('name'));
  		$data['page'] = 'Manage Projects';
  		$data['current_page'] = 'manage_projstruct';
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'manage_projstruct');
+
  		$response = $this->umodel->get_project_structure();
  		$empty_projects = $this->umodel->get_empty_projects();
  		$get_users = json_encode($this->umodel->get('tbl_users'));
@@ -230,6 +248,10 @@ class Users extends CI_Controller {
 			//header('Location: login');//die();
 			redirect('login','refresh');
 		}
+		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'add_budget');
+
 
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
@@ -267,6 +289,9 @@ class Users extends CI_Controller {
 			redirect('login','refresh');
 		}
  		$user_id = ucwords($this->session->userdata('user_id'));
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'deduct_budget');
 
 		$data['logged_in'] = true;
 
@@ -298,6 +323,9 @@ class Users extends CI_Controller {
 		$cur_page = $this->input->post('current_page');	
 		$post = $this->input->post();	
 		$batch = array();
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'proj_manage_add');
 
 
 		unset($post['process']);
@@ -325,6 +353,9 @@ class Users extends CI_Controller {
 		$cur_page = $this->input->post('current_page');	
 		$post = $this->input->post();	
 		$batch = array();
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'proj_manage_update');
 
 		unset($post['process']);
 		unset($post['current_page']);
@@ -702,6 +733,24 @@ class Users extends CI_Controller {
 		return $nav;
 	}
 
+	public function check_role($role,$page){
+		$admin = array('manage_projects','manage_users','manage_sponsors','manage_announcements','manage_requests','manage_users','manage_grants','manage_projstruct','manage_line_items','reports','settings','all_trans_logs','proj_manage_add','proj_manage_update','add_budget','deduct_budget');
+		$leaders = array('view_projects','request_budget','reports','settings','trans_logs','available_budget','budget_history');
+		$members = array('view_projects','reports','settings');
+
+		if($role == '1'){
+			$found = in_array($page, $admin);
+		}elseif($role == '2'){
+			$found = in_array($page, $leaders);
+		}elseif($role == '3'){
+			$found = in_array($page, $members);
+		}
+
+		if(!$found){
+			show_404();
+		}
+	}
+
 	public function manage_requests(){
 		if(!$this->check_token()){
 			//header('Location: login');//die();
@@ -712,6 +761,10 @@ class Users extends CI_Controller {
  		$data['user'] = ucwords($this->session->userdata('name'));
  		$data['page'] = 'Manage Requests';
  		$data['current_page'] = 'manage_requests';
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'manage_requests');
+
  		$response = $this->umodel->get_budget_requests();
  		$documents =  $this->umodel->get_documents();
  		$table_name= 'manage_requests';
@@ -811,6 +864,9 @@ class Users extends CI_Controller {
 			//header('Location: login');//die();
 			redirect('login','refresh');
 		}
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'budget_history');
 
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
@@ -845,6 +901,9 @@ class Users extends CI_Controller {
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
  		$user_id = ucwords($this->session->userdata('user_id'));
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'trans_logs');
 
  		$data['page'] = 'Transaction Logs';
  		$data['current_page'] = 'trans_logs';
@@ -868,6 +927,9 @@ class Users extends CI_Controller {
 			//header('Location: login');//die();
 			redirect('login','refresh');
 		}
+		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'available_budget');
 
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
@@ -1044,6 +1106,10 @@ class Users extends CI_Controller {
  		$data['current_page'] = 'manage_grants';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'manage_grants');
+
  		$grants = $this->umodel->get('tbl_sponsors');
  		$f_grants = array();
  		foreach($grants as $k=>$v){
@@ -1077,6 +1143,9 @@ class Users extends CI_Controller {
 		$data['logged_in'] = true;
  		$data['user'] = ucwords($this->session->userdata('name'));
  		$user_id = ucwords($this->session->userdata('user_id'));
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'all_trans_logs');
 
  		$data['page'] = 'Transaction Logs';
  		$data['current_page'] = 'all_trans_logs';
@@ -1112,6 +1181,10 @@ class Users extends CI_Controller {
  		$data['current_page'] = 'manage_line_items';
  		$nav = $this->side_nav();
  		$data['nav'] = $nav;
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'manage_line_items');
+
  		$fields = array('line_item'=>array('type'=>'text','placeholder'=>'Name','label' => 'Line Item Name'),
  						'create_date'=>array('type'=>'text','placeholder'=>'Create Date','label' => 'Create Date'),
  						'id'=>array('type'=>'hidden','placeholder'=>'id','label' => ''));
@@ -1153,6 +1226,9 @@ class Users extends CI_Controller {
  		$user_id = ucwords($this->session->userdata('user_id'));
  		$user_role = $this->session->userdata('user_role');
  		$projects =  $this->umodel->get('tbl_projects');
+ 		$role = $this->session->userdata('user_role');
+
+ 		$this->check_role($role,'reports');
 
 
 

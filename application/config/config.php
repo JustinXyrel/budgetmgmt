@@ -27,7 +27,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 // //$config['base_url'] = 'http://techyjust.com/budgetmgmt';
 // $config['base_url'] = 'localhost/test/budgetmgmt';
 // =======
-$config['base_url'] = '';
+$config['base_url'] = '/budgetmgmt';
 
 /*
 |--------------------------------------------------------------------------
